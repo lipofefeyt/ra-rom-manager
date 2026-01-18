@@ -1,18 +1,15 @@
-import json
-from pathlib import Path
+import os
+import requests
+from dotenv import load_dotenv
 
 class RAClient:
-    def __init__(self, offline=True): 
-        self.offline = offline
-        self.mock_path = Path("data/mock_ra_data.json")
+    def __init__(self):
+        load_dotenv()
+        # Initialize attributes to None first so they always exist
+        self.user = os.getenv("RA_USERNAME")
+        self.api_key = os.getenv("RA_API_KEY")
+        self.BASE_URL = "https://retroachievements.org/API/"
 
-    def get_mock_data(self):
-        with open(self.mock_path, 'r') as f:
-            return json.load(f)
-
-    def get_game_progress(self, game_id):
-        if self.offline:
-            data = self.get_mock_data()
-            # Return the fake stats for the game if they exist
-            return data.get(str(game_id), {"NumAwarded": 0, "NumAchievements": 1})
-        # ... your real requests.get code stays here for when you land ...
+        # Safety Check
+        if not self.api_key or not self.user:
+            print("⚠️ Warning: RA_USERNAME or RA_API_KEY missing in .env file.")
