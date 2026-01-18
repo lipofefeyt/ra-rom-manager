@@ -1,32 +1,18 @@
-import requests
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
+import json
+from pathlib import Path
 
 class RAClient:
-    """Handles all communication with the RetroAchievements API."""
-    
-    BASE_URL = "https://retroachievements.org/API/"
+    def __init__(self, offline=True): 
+        self.offline = offline
+        self.mock_path = Path("data/mock_ra_data.json")
 
-    def __init__(self):
-        load_dotenv()
-        self.user = os.getenv("RA_USERNAME")
-        self.api_key = os.getenv("RA_API_KEY")
-    
-    # The Safety Check
-    if not self.api_key or not self.user:
-        print("⚠️ Warning: RA_USERNAME or RA_API_KEY missing in .env")
-        print("API functions will be disabled.")
+    def get_mock_data(self):
+        with open(self.mock_path, 'r') as f:
+            return json.load(f)
 
-
-    def test_connection(self):
-        """Simple check to see if the API key is valid."""
-        if not self.api_key:
-            return "Error: No API Key found in .env file!"
-        return "Client ready to fetch ROM data."
-
-# You can run this file directly in Pydroid to test
-if __name__ == "__main__":
-    client = RAClient()
-    print(client.test_connection())
+    def get_game_progress(self, game_id):
+        if self.offline:
+            data = self.get_mock_data()
+            # Return the fake stats for the game if they exist
+            return data.get(str(game_id), {"NumAwarded": 0, "NumAchievements": 1})
+        # ... your real requests.get code stays here for when you land ...

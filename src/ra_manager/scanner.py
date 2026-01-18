@@ -28,7 +28,8 @@ class ROMScanner:
         rom_data = []
 
         for root, dirs, files in os.walk(self.rom_dir):
-            for file in files:
+            
+            for file in files:                             
                 file_path = Path(root) / file
                 if file_path.suffix.lower() in self.supported_extensions:
                     print(f"Hashing: {file}...")

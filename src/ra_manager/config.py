@@ -8,12 +8,12 @@ def get_rom_path():
     """Returns the default ROM path based on the device."""
     if IS_ANDROID:
         # Pydroid standard path
-        return Path("/sdcard/RetroArch/roms")
+        return Path("/storage/emulated/0/RetroArch/roms")
     else:
         # Windows standard path (adjust to your PC)
         return Path("C:/Games/RetroArch/roms")
 
 def get_save_path():
     if IS_ANDROID:
-        return Path("/sdcard/RetroArch/saves")
+        return Path("/storage/emulated/0/RetroArch/saves")
     return Path("C:/Games/RetroArch/saves")
