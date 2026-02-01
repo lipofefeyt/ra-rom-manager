@@ -1,4 +1,5 @@
 import os
+import time
 import pandas as pd
 from src.ra_manager.scanner import ROMScanner
 from src.ra_manager.api_client import RAClient
@@ -11,33 +12,44 @@ def main():
     scanner = ROMScanner()
     client = RAClient()
     
-    # 2. Scan Local ROMs
-    print("\n[1/3] Scanning local ROMs...")
-    local_roms_df = scanner.scan()
+    # 1. Get the RA "Master List" for GBA (ID 4)
+    print("📥 Downloading GBA Master Hash List from RetroAchievements...")
+    ra_master_list = client.get_console_game_hashes(5)
     
-    if local_roms_df.empty:
-        print("No ROMs found in your configured directory. Check config.py!")
-        return
+    # 1. Create a robust lookup dictionary
+    hash_map = {}
+    print(f"Parsing {len(ra_master_list)} games from RA...")
 
-    # 3. Check for API Credentials
-    has_api = client.api_key is not None and "get_this_from_ra" not in client.api_key
+    for game in ra_master_list:
+        title = game.get('Title', 'Unknown')
+        hashes = game.get('Hashes', [])
+        
+        # RetroAchievements sometimes sends Hashes as a list, sometimes a string
+        if isinstance(hashes, list):
+            for h in hashes:
+                if h: 
+                    print(f"'{h}' ===> '{title}'")
+
+                    hash_map[str(h).lower().strip()] = title
+        elif isinstance(hashes, str) and hashes:
+            # If it's a single string, clean and add it
+            hash_map[hashes.lower().strip()] = title
+
+    # 2. Match with your Local Scanned Data
+    print(f"📂 Scanning local ROMs...")
+    df = scanner.scan()
     
-    if not has_api:
-        print("\n[2/3] ⚠️ API Key missing. Skipping RA server checks.")
-        print("Showing local ROM list only:")
-        print(local_roms_df[['filename', 'console', 'md5']])
-    else:
-        print("\n[2/3] ✅ API Key found. Connecting to RetroAchievements...")
-        # Placeholder for the matching logic we will write next
-        print("Matching local hashes against RA database...")
-        # For now, we'll just display the scan results
-        print(local_roms_df[['filename', 'console', 'md5']])
-
-    # 4. Export results (The "Sheet" functionality)
-    print("\n[3/3] Saving data to local cache...")
-    output_path = "data/rom_report.csv"
-    local_roms_df.to_csv(output_path, index=False)
-    print(f"Report saved to {output_path}")
+    # Ensure local MD5s are clean strings for the comparison
+    df['md5'] = df['md5'].astype(str).str.lower().str.strip()
+    
+    # 3. Use a direct lookup to avoid mapping errors
+    df['ra_title'] = df['md5'].map(hash_map).fillna("Unknown/Unlinked")
+    
+    # 4. Save
+    df.to_csv("data/identified_roms.csv", index=False)
+    
+    matched_count = len(df[df['ra_title'] != "Unknown/Unlinked"])
+    print(f"✅ Done! Matched {matched_count} out of {len(df)} games.")
 
 if __name__ == "__main__":
     main()

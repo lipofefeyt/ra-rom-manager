@@ -12,15 +12,14 @@ class ROMScanner:
 
     def calculate_md5(self, file_path):
         """Calculates MD5 in chunks to save memory (important for phone/large ISOs)."""
+        
         hash_md5 = hashlib.md5()
-        try:
-            with open(file_path, "rb") as f:
-                # Read in 8KB chunks
-                for chunk in iter(lambda: f.read(8192), b""):
-                    hash_md5.update(chunk)
-            return hash_md5.hexdigest()
-        except Exception as e:
-            return f"Error: {e}"
+        with open(file_path, "rb") as f:
+            # Read in chunks to handle large files
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_md5.update(chunk)
+                
+        return hash_md5.hexdigest().lower() 
 
     def scan(self):
         """Walks through the ROM directory and builds a list of games."""

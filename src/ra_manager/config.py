@@ -11,7 +11,7 @@ def get_rom_path():
         return Path("/storage/emulated/0/RetroArch/roms")
     else:
         # Windows standard path (adjust to your PC)
-        return Path("C:/Games/RetroArch/roms")
+        return Path("H:/Disk/Games/Roms/GBA")
 
 def get_save_path():
     if IS_ANDROID:
