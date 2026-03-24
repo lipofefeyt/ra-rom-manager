@@ -2,6 +2,7 @@ import pandas as pd
 
 from src.ra_manager.api_client import RAClient, RAClientError
 from src.ra_manager.config import CONSOLES, FOLDER_TO_CONSOLE_ID
+from src.ra_manager.exporter import export
 from src.ra_manager.matcher import HashMatcher
 from src.ra_manager.scanner import ROMScanner
 from src.ra_manager.stats import enrich_with_progress
@@ -64,9 +65,16 @@ def main():
     print(f"\n🏆 Fetching achievement progress for {matched_count} matched ROMs...")
     final_df = enrich_with_progress(final_df, client)
 
-    # 4. Print summary
+    # 4. Fetch user summary for the Summary sheet
+    user_summary = None
+    try:
+        user_summary = client.get_user_summary()
+    except RAClientError as e:
+        print(f"⚠️  Could not fetch user summary: {e}")
+
+    # 5. Print summary
     mastered = final_df["is_mastered"].sum()
-    in_progress = (final_df["status"].str.startswith("In Progress")).sum()
+    in_progress = final_df["status"].str.startswith("In Progress").sum()
     unplayed = (final_df["status"] == "Unplayed").sum()
 
     print("\n📊 Summary:")
@@ -76,9 +84,9 @@ def main():
     print(f"   In Progress   : {in_progress}")
     print(f"   Unplayed      : {unplayed}")
 
-    # 5. Export
-    final_df.to_csv("data/identified_roms.csv", index=False)
-    print("\n💾 Saved to data/identified_roms.csv")
+    # 6. Export to Excel
+    output_path = export(final_df, user_summary)
+    print(f"\n💾 Saved to {output_path}")
 
 
 if __name__ == "__main__":
