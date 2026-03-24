@@ -3,6 +3,7 @@ Name: ra-rom-manager
 Version: 0.1.0
 Summary: Personal RetroAchievements ROM manager — hash verification, achievement tracking, and Excel reporting
 Requires-Python: >=3.12
+License-File: LICENSE
 Requires-Dist: requests>=2.31
 Requires-Dist: pandas>=2.2
 Requires-Dist: openpyxl>=3.1
@@ -13,3 +14,4 @@ Requires-Dist: pytest-mock>=3.12; extra == "dev"
 Requires-Dist: ruff>=0.4; extra == "dev"
 Requires-Dist: mypy>=1.9; extra == "dev"
 Requires-Dist: types-requests>=2.31; extra == "dev"
+Dynamic: license-file
