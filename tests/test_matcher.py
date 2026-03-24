@@ -27,20 +27,20 @@ def game_list(mock_data):
 class TestBuildMap:
     def test_builds_map_from_list_hashes(self, matcher, game_list):
         hash_map = matcher.build_map(game_list)
-        assert "abc123def456abc123def456abc123de" in hash_map
+        assert "fb20d6009c7400f37581f81ae5b1e917" in hash_map
 
     def test_maps_hash_to_title_and_id(self, matcher, game_list):
         hash_map = matcher.build_map(game_list)
-        title, game_id = hash_map["abc123def456abc123def456abc123de"]
+        title, game_id = hash_map["fb20d6009c7400f37581f81ae5b1e917"]
         assert title == "Rayman Advance"
         assert game_id == 1141
 
     def test_game_with_multiple_hashes(self, matcher, game_list):
         hash_map = matcher.build_map(game_list)
-        assert "deadbeefdeadbeefdeadbeefdeadbeef" in hash_map
+        assert "dfc6fdf38b3c277b6f176cd7c25712c8" in hash_map
         assert "cafecafecafecafecafecafecafecafe" in hash_map
         # Both hashes map to the same game
-        assert hash_map["deadbeefdeadbeefdeadbeefdeadbeef"][1] == 1448
+        assert hash_map["dfc6fdf38b3c277b6f176cd7c25712c8"][1] == 1448
         assert hash_map["cafecafecafecafecafecafecafecafe"][1] == 1448
 
     def test_empty_game_list_returns_empty_map(self, matcher):
@@ -66,29 +66,27 @@ class TestBuildMap:
 
 class TestMatch:
     def _make_df(self, md5s: list[str]) -> pd.DataFrame:
-        return pd.DataFrame(
-            {
-                "filename": [f"game_{i}.gba" for i in range(len(md5s))],
-                "md5": md5s,
-                "console": ["gba"] * len(md5s),
-            }
-        )
+        return pd.DataFrame({
+            "filename": [f"game_{i}.gba" for i in range(len(md5s))],
+            "md5": md5s,
+            "console": ["gba"] * len(md5s),
+        })
 
     def test_matched_rom_has_correct_title(self, matcher, game_list):
         hash_map = matcher.build_map(game_list)
-        df = self._make_df(["abc123def456abc123def456abc123de"])
+        df = self._make_df(["fb20d6009c7400f37581f81ae5b1e917"])
         result = matcher.match(df, hash_map)
         assert result.iloc[0]["ra_title"] == "Rayman Advance"
 
     def test_matched_rom_has_correct_game_id(self, matcher, game_list):
         hash_map = matcher.build_map(game_list)
-        df = self._make_df(["abc123def456abc123def456abc123de"])
+        df = self._make_df(["fb20d6009c7400f37581f81ae5b1e917"])
         result = matcher.match(df, hash_map)
         assert result.iloc[0]["ra_game_id"] == 1141
 
     def test_matched_rom_sets_matched_true(self, matcher, game_list):
         hash_map = matcher.build_map(game_list)
-        df = self._make_df(["abc123def456abc123def456abc123de"])
+        df = self._make_df(["fb20d6009c7400f37581f81ae5b1e917"])
         result = matcher.match(df, hash_map)
         assert result.iloc[0]["matched"]
 
@@ -112,25 +110,23 @@ class TestMatch:
 
     def test_mixed_matched_and_unmatched(self, matcher, game_list):
         hash_map = matcher.build_map(game_list)
-        df = self._make_df(
-            [
-                "abc123def456abc123def456abc123de",  # matches Rayman
-                "000000000000000000000000notareal",  # no match
-            ]
-        )
+        df = self._make_df([
+            "fb20d6009c7400f37581f81ae5b1e917",  # matches Rayman
+            "000000000000000000000000notareal",   # no match
+        ])
         result = matcher.match(df, hash_map)
         assert result["matched"].sum() == 1
         assert len(result) == 2
 
     def test_md5_normalised_before_matching(self, matcher, game_list):
         hash_map = matcher.build_map(game_list)
-        df = self._make_df(["  ABC123DEF456ABC123DEF456ABC123DE  "])
+        df = self._make_df(["  FB20D6009C7400F37581F81AE5B1E917  "])
         result = matcher.match(df, hash_map)
         assert result.iloc[0]["matched"]
 
     def test_original_df_not_mutated(self, matcher, game_list):
         hash_map = matcher.build_map(game_list)
-        df = self._make_df(["abc123def456abc123def456abc123de"])
+        df = self._make_df(["fb20d6009c7400f37581f81ae5b1e917"])
         original_cols = set(df.columns)
         matcher.match(df, hash_map)
         assert set(df.columns) == original_cols
