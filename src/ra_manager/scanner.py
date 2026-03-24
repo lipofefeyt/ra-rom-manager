@@ -102,7 +102,7 @@ class ROMScanner:
 
                 if suffix in ZIP_EXTENSIONS:
                     print(f"  📦 Extracting: {file}")
-                    md5, inner = self._hash_zip(self, file_path)
+                    md5, inner = self._hash_zip(file_path)
                     if md5 is None:
                         rom_data.append(_skipped_row(file, suffix, file_path, console, inner))
                     else:
