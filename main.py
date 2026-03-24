@@ -1,7 +1,7 @@
-from src.ra_manager.scanner import ROMScanner
 from src.ra_manager.api_client import RAClient
+from src.ra_manager.config import CONSOLES, FOLDER_TO_CONSOLE_ID
 from src.ra_manager.matcher import HashMatcher
-from src.ra_manager.config import CONSOLES, FOLDER_TO_CONSOLE_ID, get_rom_path
+from src.ra_manager.scanner import ROMScanner
 
 
 def main():

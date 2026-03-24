@@ -1,8 +1,11 @@
 import hashlib
 import os
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
+
 from .config import get_rom_path
+
 
 class ROMScanner:
     def __init__(self, rom_dir=None):
@@ -12,14 +15,14 @@ class ROMScanner:
 
     def calculate_md5(self, file_path):
         """Calculates MD5 in chunks to save memory (important for phone/large ISOs)."""
-        
+
         hash_md5 = hashlib.md5()
         with open(file_path, "rb") as f:
             # Read in chunks to handle large files
             for chunk in iter(lambda: f.read(4096), b""):
                 hash_md5.update(chunk)
-                
-        return hash_md5.hexdigest().lower() 
+
+        return hash_md5.hexdigest().lower()
 
     def scan(self):
         """Walks through the ROM directory and builds a list of games."""
@@ -27,13 +30,13 @@ class ROMScanner:
         rom_data = []
 
         for root, dirs, files in os.walk(self.rom_dir):
-            
-            for file in files:                             
+
+            for file in files:
                 file_path = Path(root) / file
                 if file_path.suffix.lower() in self.supported_extensions:
                     print(f"Hashing: {file}...")
                     file_hash = self.calculate_md5(file_path)
-                    
+
                     rom_data.append({
                         "filename": file,
                         "extension": file_path.suffix,
@@ -41,7 +44,7 @@ class ROMScanner:
                         "md5": file_hash,
                         "console": file_path.parent.name # Assumes folders like 'psx', 'gba'
                     })
-        
+
         # Turn the list into a Pandas DataFrame (your "Sheet")
         return pd.DataFrame(rom_data)
 

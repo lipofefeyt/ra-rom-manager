@@ -1,6 +1,8 @@
 import os
+
 import requests
 from dotenv import load_dotenv
+
 
 class RAClient:
     def __init__(self):
@@ -15,20 +17,20 @@ class RAClient:
             print("⚠️ Warning: RA_USERNAME or RA_API_KEY missing in .env file.")
 
     def get_console_game_hashes(self, console_id):
-        
+
         """
         Fetches EVERY game and its linked hashes for a specific console.
         GBA Console ID is 4.
         """
         url = f"{self.BASE_URL}/API_GetGameList.php"
-        
+
         params = {
             "u": self.user,
             "y": self.api_key,
-            "i": console_id,  
-            "h": 1            
+            "i": console_id,
+            "h": 1
         }
-        
+
         try:
             response = requests.get(url, params=params)
             if response.status_code == 200:

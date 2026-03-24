@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -47,7 +48,7 @@ FOLDER_TO_CONSOLE_ID = {
 def get_rom_path() -> Path:
     raw = os.getenv("ROM_PATH")
     if not raw:
-        raise EnvironmentError("ROM_PATH is not set in your .env file.")
+        raise OSError("ROM_PATH is not set in your .env file.")
     path = Path(raw)
     if not path.exists():
         raise FileNotFoundError(f"ROM_PATH does not exist: {path}")
