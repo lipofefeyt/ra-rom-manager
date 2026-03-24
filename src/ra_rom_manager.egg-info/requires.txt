@@ -1,0 +1,11 @@
+requests>=2.31
+pandas>=2.2
+openpyxl>=3.1
+python-dotenv>=1.0
+
+[dev]
+pytest>=8.0
+pytest-mock>=3.12
+ruff>=0.4
+mypy>=1.9
+types-requests>=2.31

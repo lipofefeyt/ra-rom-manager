@@ -1,19 +1,54 @@
-import platform
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
-# Detect the OS
-IS_ANDROID = "android" in platform.uname().version.lower() or hasattr(platform, "android_ver")
+load_dotenv()
 
-def get_rom_path():
-    """Returns the default ROM path based on the device."""
-    if IS_ANDROID:
-        # Pydroid standard path
-        return Path("/storage/emulated/0/RetroArch/roms")
-    else:
-        # Windows standard path (adjust to your PC)
-        return Path("H:/Disk/Games/Roms/GBA")
+# Console ID → name mapping as defined by RetroAchievements
+# Full list: https://retroachievements.org/APIv1.php#get-consoleid
+CONSOLES = {
+    3:  "SNES",
+    4:  "GBA",
+    5:  "GB",
+    6:  "GBC",
+    7:  "NES",
+    11: "PlayStation",
+    12: "PlayStation 2",
+    13: "PC Engine",
+    15: "Game Gear",
+    17: "Jaguar",
+    18: "Saturn",
+    21: "PlayStation Portable",
+    23: "Mega Drive",
+    24: "Master System",
+    25: "Atari Lynx",
+}
 
-def get_save_path():
-    if IS_ANDROID:
-        return Path("/storage/emulated/0/RetroArch/saves")
-    return Path("C:/Games/RetroArch/saves")
+# Reverse map: folder name (lowercase) → console ID
+# Scanner uses this to infer console from subfolder name
+FOLDER_TO_CONSOLE_ID = {
+    "snes":  3,
+    "gba":   4,
+    "gb":    5,
+    "gbc":   6,
+    "nes":   7,
+    "psx":   11,
+    "ps1":   11,
+    "ps2":   12,
+    "pce":   13,
+    "gg":    15,
+    "sms":   24,
+    "psp":   21,
+    "md":    23,
+    "genesis": 23,
+}
+
+
+def get_rom_path() -> Path:
+    raw = os.getenv("ROM_PATH")
+    if not raw:
+        raise EnvironmentError("ROM_PATH is not set in your .env file.")
+    path = Path(raw)
+    if not path.exists():
+        raise FileNotFoundError(f"ROM_PATH does not exist: {path}")
+    return path

@@ -1,55 +1,62 @@
-import os
-import time
-import pandas as pd
 from src.ra_manager.scanner import ROMScanner
 from src.ra_manager.api_client import RAClient
-from src.ra_manager.config import get_rom_path
+from src.ra_manager.matcher import HashMatcher
+from src.ra_manager.config import CONSOLES, FOLDER_TO_CONSOLE_ID, get_rom_path
+
 
 def main():
     print("--- RetroAchievements ROM Manager ---")
-    
-    # 1. Initialize Components
+
     scanner = ROMScanner()
     client = RAClient()
-    
-    # 1. Get the RA "Master List" for GBA (ID 4)
-    print("📥 Downloading GBA Master Hash List from RetroAchievements...")
-    ra_master_list = client.get_console_game_hashes(5)
-    
-    # 1. Create a robust lookup dictionary
-    hash_map = {}
-    print(f"Parsing {len(ra_master_list)} games from RA...")
+    matcher = HashMatcher()
 
-    for game in ra_master_list:
-        title = game.get('Title', 'Unknown')
-        hashes = game.get('Hashes', [])
-        
-        # RetroAchievements sometimes sends Hashes as a list, sometimes a string
-        if isinstance(hashes, list):
-            for h in hashes:
-                if h: 
-                    print(f"'{h}' ===> '{title}'")
-
-                    hash_map[str(h).lower().strip()] = title
-        elif isinstance(hashes, str) and hashes:
-            # If it's a single string, clean and add it
-            hash_map[hashes.lower().strip()] = title
-
-    # 2. Match with your Local Scanned Data
-    print(f"📂 Scanning local ROMs...")
+    # 1. Scan local ROMs
+    print("📂 Scanning local ROMs...")
     df = scanner.scan()
-    
-    # Ensure local MD5s are clean strings for the comparison
-    df['md5'] = df['md5'].astype(str).str.lower().str.strip()
-    
-    # 3. Use a direct lookup to avoid mapping errors
-    df['ra_title'] = df['md5'].map(hash_map).fillna("Unknown/Unlinked")
-    
-    # 4. Save
-    df.to_csv("data/identified_roms.csv", index=False)
-    
-    matched_count = len(df[df['ra_title'] != "Unknown/Unlinked"])
-    print(f"✅ Done! Matched {matched_count} out of {len(df)} games.")
+
+    if df.empty:
+        print("⚠️  No ROMs found. Check your ROM_PATH in .env.")
+        return
+
+    # 2. For each detected console, fetch the RA hash list and match
+    detected_consoles = df["console"].str.lower().unique()
+    all_matched = []
+
+    for folder_name in detected_consoles:
+        console_id = FOLDER_TO_CONSOLE_ID.get(folder_name)
+        if console_id is None:
+            print(f"⚠️  Unknown console folder '{folder_name}' — skipping.")
+            continue
+
+        console_name = CONSOLES[console_id]
+        print(f"📥 Fetching RA hash list for {console_name} (ID {console_id})...")
+
+        ra_game_list = client.get_console_game_hashes(console_id)
+        if not ra_game_list:
+            print(f"❌ No data returned for {console_name} — skipping.")
+            continue
+
+        hash_map = matcher.build_map(ra_game_list)
+        console_df = df[df["console"].str.lower() == folder_name].copy()
+        matched_df = matcher.match(console_df, hash_map)
+        all_matched.append(matched_df)
+
+        matched_count = matched_df["matched"].sum()
+        print(f"✅ {console_name}: {matched_count}/{len(matched_df)} ROMs matched.")
+
+    if not all_matched:
+        print("❌ No consoles could be matched. Check folder names and .env config.")
+        return
+
+    # 3. Combine and export
+    import pandas as pd
+    final_df = pd.concat(all_matched, ignore_index=True)
+    final_df.to_csv("data/identified_roms.csv", index=False)
+
+    total_matched = final_df["matched"].sum()
+    print(f"\n🎮 Done! {total_matched}/{len(final_df)} ROMs matched across all consoles.")
+
 
 if __name__ == "__main__":
     main()

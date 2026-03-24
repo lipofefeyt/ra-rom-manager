@@ -1,0 +1,86 @@
+[
+  {
+    "title": "[INFRA] Set up Codespaces dev container",
+    "body": "## Objective\nProvide a reproducible, zero-setup development environment via GitHub Codespaces so the project can be worked on from any machine without manual Python/dependency configuration.\n\n## Problem\nThe repo currently has no `.devcontainer` config. Every new environment requires manual setup of Python, pip installs, and `.env` creation — error-prone and inconsistent.\n\n## Design\n- Add `.devcontainer/devcontainer.json` with Python 3.12, auto-install of dependencies via `pip install -e .[dev]`, and recommended VS Code extensions (Pylance, Ruff, GitLens)\n- Add `.devcontainer/post-create.sh` to copy `.env.example` to `.env` on first launch\n- Add `.env.example` with placeholder keys so contributors know what's required\n\n## Acceptance Criteria\n- Codespace launches and `python main.py` runs without any manual setup\n- `.env.example` exists at repo root with `RA_USERNAME` and `RA_API_KEY` placeholders\n- Pylance and Ruff extensions are pre-installed in the Codespace\n\n## Implements\nRA-INFRA-001",
+    "labels": ["type: chore", "layer: infra", "priority: now"],
+    "milestone": "M1 - Clean Foundation"
+  },
+  {
+    "title": "[INFRA] Migrate from requirements.txt to pyproject.toml",
+    "body": "## Objective\nReplace the bare `requirements.txt` with a proper `pyproject.toml` to enable installable packaging, dev dependency separation, and tool configuration in one place.\n\n## Problem\n`requirements.txt` has no dev/prod separation, no version pinning strategy, and no project metadata. Tools like Ruff and pytest cannot be configured centrally.\n\n## Design\n- Add `pyproject.toml` with `[project]` metadata, `[project.dependencies]` (requests, pandas, openpyxl, python-dotenv), and `[project.optional-dependencies]` for dev (pytest, ruff, mypy)\n- Configure Ruff linting rules in `[tool.ruff]`\n- Keep `requirements.txt` as a frozen lockfile generated from `pip freeze` for CI reproducibility\n\n## Acceptance Criteria\n- `pip install -e .[dev]` installs all dependencies cleanly\n- `pyproject.toml` contains Ruff config\n- `requirements.txt` is removed or replaced by a pinned lockfile\n\n## Implements\nRA-INFRA-002",
+    "labels": ["type: chore", "layer: infra", "priority: now"],
+    "milestone": "M1 - Clean Foundation"
+  },
+  {
+    "title": "[INFRA] Add README, LICENSE, and CONTRIBUTING",
+    "body": "## Objective\nBring the repo up to a standard that clearly communicates the project purpose, setup steps, and contribution workflow — matching the documentation standard of opensvf.\n\n## Problem\nThe repo has no README, no LICENSE, and no CONTRIBUTING guide. Anyone landing on it (including future-self) has no idea what it does or how to run it.\n\n## Design\n- `README.md`: project description, feature list, quickstart (clone → set .env → run), screenshot of sample Excel output\n- `LICENSE`: MIT\n- `CONTRIBUTING.md`: branching strategy (feature branches → PR → main), issue workflow, code style (Ruff)\n\n## Acceptance Criteria\n- README renders correctly on GitHub with at least: description, prerequisites, quickstart steps\n- LICENSE file is present\n- CONTRIBUTING references the issues.json workflow\n\n## Implements\nRA-INFRA-003",
+    "labels": ["type: chore", "layer: infra", "priority: now"],
+    "milestone": "M1 - Clean Foundation"
+  },
+  {
+    "title": "[INFRA] Add CI workflow (lint + test)",
+    "body": "## Objective\nAdd a GitHub Actions CI pipeline that runs on every push and PR to catch regressions and enforce code style automatically.\n\n## Problem\nThere is no automated validation. A bad commit can silently break the scanner or API client with no feedback until manual testing.\n\n## Design\n- `.github/workflows/ci.yml`: triggers on push/PR to main\n- Steps: checkout → setup Python 3.12 → install deps → run Ruff → run pytest\n- Add CI badge to README\n- Add a `tests/` directory with at least one smoke test for ROMScanner and one for RAClient (mocked)\n\n## Acceptance Criteria\n- CI passes on a clean checkout\n- Badge visible in README\n- Ruff reports zero violations on current codebase\n\n## Implements\nRA-INFRA-004",
+    "labels": ["type: chore", "layer: infra", "priority: next"],
+    "milestone": "M1 - Clean Foundation"
+  },
+  {
+    "title": "[CORE] Fix console ID bug in main.py",
+    "body": "## Objective\nCorrect the hardcoded console ID passed to `get_console_game_hashes()` which currently causes GBA ROMs to be matched against the wrong console's hash list.\n\n## Problem\nThe comment in `main.py` says 'GBA Console ID is 4' but the code passes `5`, which is the Game Boy (GB) console. This means every GBA hash lookup silently returns wrong results.\n\n## Design\n- Move console definitions to `config.py` as a named dict: `CONSOLES = {4: 'GBA', 5: 'GB', ...}`\n- Replace the magic number `5` in `main.py` with `CONSOLES` lookup\n- Verify correct IDs against the RA API docs\n\n## Acceptance Criteria\n- GBA ROM matching uses console ID 4\n- Console IDs are never magic numbers in main.py or anywhere else\n- `config.py` CONSOLES dict covers at least: GB (5), GBC (6), GBA (4), SNES (3), NES (7), PS1 (12)\n\n## Implements\nRA-CORE-001",
+    "labels": ["type: bug", "layer: core", "priority: now"],
+    "milestone": "M1 - Clean Foundation"
+  },
+  {
+    "title": "[CORE] Refactor main.py — extract hash matching to matcher.py",
+    "body": "## Objective\nThin out `main.py` to pure orchestration by extracting the hash-map building and ROM matching logic into a dedicated `matcher.py` module.\n\n## Problem\n`main.py` currently contains business logic (building `hash_map` from the RA game list, iterating hashes, normalising strings) that does not belong in an entry point. This makes the logic hard to test and reuse.\n\n## Design\n- Create `src/ra_manager/matcher.py` with a `HashMatcher` class\n- `HashMatcher.build_map(ra_game_list)` → returns `{md5: title}` dict\n- `HashMatcher.match(df, hash_map)` → returns df with `ra_title` and `ra_game_id` columns\n- `main.py` becomes: init → fetch → match → export, max ~20 lines\n\n## Acceptance Criteria\n- `main.py` contains no hash iteration or string normalisation logic\n- `HashMatcher` is unit-testable in isolation\n- Matching result includes both `ra_title` and `ra_game_id` (needed for progress fetching in M3)\n\n## Implements\nRA-CORE-002",
+    "labels": ["type: feature", "layer: core", "priority: now"],
+    "milestone": "M1 - Clean Foundation"
+  },
+  {
+    "title": "[CACHE] Implement local hash list cache",
+    "body": "## Objective\nAdd a caching layer that stores the RA console hash lists locally so the API is only called when the cache is stale, eliminating the slow full re-fetch on every run.\n\n## Problem\nEvery run calls `API_GetGameList.php` which fetches thousands of hashes per console. This is slow (~2–5s per console), burns rate limit quota, and makes the tool unusable when offline.\n\n## Design\n- Create `src/ra_manager/cache.py` with `load_cached(key)` and `save_cache(key, value)` functions\n- Storage: JSON file at `data/cache.json` keyed by `console_{id}`\n- TTL: 24 hours (configurable in `config.py`)\n- `RAClient.get_console_game_hashes()` checks cache before making API call\n- CLI flag `--refresh-cache` to force a full re-fetch\n\n## Acceptance Criteria\n- Second run with warm cache completes hash lookup with zero API calls\n- Cache invalidates automatically after TTL\n- `--refresh-cache` flag bypasses cache and updates it\n- Cache file is listed in `.gitignore`\n\n## Implements\nRA-CACHE-001",
+    "labels": ["type: feature", "layer: cache", "priority: now"],
+    "milestone": "M2 - Multi-Console & Caching"
+  },
+  {
+    "title": "[CACHE] Implement user progress cache",
+    "body": "## Objective\nCache per-game user achievement progress locally to avoid re-fetching progress data for games that haven't been played recently.\n\n## Problem\nOnce M3 adds `get_user_progress()`, fetching progress for every matched ROM on every run will be very slow and will hit RA rate limits for large collections.\n\n## Design\n- Extend `cache.py` to support `progress_{game_id}` keys\n- TTL: 1 hour for progress data (shorter than hash list since it changes more frequently)\n- `RAClient.get_user_progress()` checks progress cache before API call\n- Cache entries store: earned count, total count, last_earned timestamp, points\n\n## Acceptance Criteria\n- Progress data for unchanged games is served from cache\n- Progress cache TTL is independently configurable from hash cache TTL\n- Cache size stays bounded (prune entries for game IDs no longer in the local collection)\n\n## Implements\nRA-CACHE-002",
+    "labels": ["type: feature", "layer: cache", "priority: next"],
+    "milestone": "M2 - Multi-Console & Caching"
+  },
+  {
+    "title": "[SCANNER] Improve scanner performance and extension handling",
+    "body": "## Objective\nFix correctness issues with how certain ROM file types are hashed and improve scanning speed for large collections.\n\n## Problem\nThree issues exist in the current scanner: (1) chunk size of 4096 bytes is unnecessarily slow for large ISOs; (2) `.cue` files are text descriptors — hashing them will never match RA; (3) `.zip` files hash the archive, not the ROM inside, so they will never match RA hashes.\n\n## Design\n- Bump chunk size from 4096 to 65536 (64 KB)\n- Remove `.cue` from `supported_extensions`; handle `.bin` + `.cue` pairs by hashing only the `.bin`\n- For `.zip`: extract in-memory and hash the contained ROM file (using `zipfile` stdlib)\n- Add a `skipped` column to the output DataFrame for files that were intentionally skipped with a reason\n\n## Acceptance Criteria\n- `.cue` files are not hashed; their paired `.bin` is hashed instead\n- `.zip` files are extracted in-memory and the inner file is hashed\n- Scanning a 1 GB ISO is measurably faster with the new chunk size\n- No third-party dependencies added for zip handling\n\n## Implements\nRA-SCAN-001",
+    "labels": ["type: bug", "layer: scanner", "priority: next"],
+    "milestone": "M2 - Multi-Console & Caching"
+  },
+  {
+    "title": "[SCANNER] Add multi-console support",
+    "body": "## Objective\nAllow the scanner and matcher to operate across multiple consoles in a single run, with each console's ROMs stored in its own subfolder.\n\n## Problem\nThe current flow is hardwired to a single console ID. Running against a full ROM library with GBA, GB, SNES, PS1, etc. requires multiple manual runs and produces separate CSV files with no unified view.\n\n## Design\n- Scanner infers console from folder name using `CONSOLES` map in `config.py`\n- `main.py` iterates over all detected consoles in the ROM directory\n- Hash matching is done per-console (fetches the correct RA hash list for each)\n- Output DataFrame has a `console` column populated from folder name\n\n## Acceptance Criteria\n- A ROM library with `roms/gba/`, `roms/gbc/`, `roms/snes/` is processed in one run\n- Each ROM row in the output includes the correct console name\n- Unknown console folders are logged as warnings but do not crash the run\n\n## Implements\nRA-SCAN-002",
+    "labels": ["type: feature", "layer: scanner", "priority: next"],
+    "milestone": "M2 - Multi-Console & Caching"
+  },
+  {
+    "title": "[API] Add get_user_progress() to RAClient",
+    "body": "## Objective\nExpand `RAClient` with a method to fetch per-game achievement progress for the configured user, enabling the achievement tracking feature.\n\n## Problem\n`RAClient` only has `get_console_game_hashes()`. There is no way to retrieve how many achievements a user has earned for a given game, which is a core feature of the project.\n\n## Design\n- Add `get_user_progress(game_id: int) -> dict` using `API_GetGameInfoAndUserProgress.php`\n- Returns: `{earned: int, total: int, points_earned: int, points_total: int, is_mastered: bool}`\n- Add `timeout=10` to all `requests.get()` calls\n- Raise `RAClientError` (custom exception) instead of bare `except Exception`\n\n## Acceptance Criteria\n- `get_user_progress(game_id)` returns correct earned/total counts for a known game\n- All API calls have a 10-second timeout\n- `RAClientError` is importable and catchable by callers\n- Method is covered by a unit test with a mocked HTTP response\n\n## Implements\nRA-API-001",
+    "labels": ["type: feature", "layer: api", "priority: next"],
+    "milestone": "M3 - Achievement Tracking"
+  },
+  {
+    "title": "[API] Add get_user_summary() to RAClient",
+    "body": "## Objective\nFetch the user's overall RA profile stats (total points, rank, games played) to power the summary sheet in the Excel output.\n\n## Problem\nThere is no way to display high-level user statistics like global rank or total points earned — both of which were listed as desired features.\n\n## Design\n- Add `get_user_summary() -> dict` using `API_GetUserSummary.php`\n- Returns: `{points: int, softcore_points: int, rank: int, games_played: int, last_activity: str}`\n- Cache result with a 1-hour TTL\n\n## Acceptance Criteria\n- `get_user_summary()` returns the correct points and rank for the configured user\n- Result is cached and does not re-fetch within TTL\n- Used in the Summary sheet of the Excel export (M4)\n\n## Implements\nRA-API-002",
+    "labels": ["type: feature", "layer: api", "priority: next"],
+    "milestone": "M3 - Achievement Tracking"
+  },
+  {
+    "title": "[OUTPUT] Implement Excel export with openpyxl",
+    "body": "## Objective\nReplace the CSV export with a structured, multi-sheet Excel workbook that presents the full ROM library, achievement progress, and stats in a readable format.\n\n## Problem\nThe current CSV export is flat and single-console. There is no summary view, no per-console breakdown, and no visual distinction between matched/unmatched ROMs or completed/in-progress games.\n\n## Design\n- Create `src/ra_manager/exporter.py` with an `ExcelExporter` class\n- Sheet 1 — **Summary**: user stats (points, rank), total ROMs, matched %, games mastered, in-progress count\n- Sheet 2-N — **Per-console sheets**: one sheet per console with columns: filename, ra_title, matched, achievements_earned, achievements_total, completion_%, is_mastered\n- Sheet N+1 — **Want to Play**: manually maintained list, imported from `data/want_to_play.csv` if it exists\n- Conditional formatting: green rows for mastered, yellow for in-progress, red for unmatched\n\n## Acceptance Criteria\n- Running `main.py` produces `data/ra_collection.xlsx`\n- Each console has its own sheet named after the console\n- Summary sheet shows correct aggregated stats\n- Want to Play sheet is present (empty if no source file exists)\n- Conditional formatting renders correctly in Excel and LibreOffice Calc\n\n## Implements\nRA-OUT-001",
+    "labels": ["type: feature", "layer: output", "priority: later"],
+    "milestone": "M4 - Excel Output & Stats"
+  },
+  {
+    "title": "[OUTPUT] Add want-to-play list management",
+    "body": "## Objective\nAllow the user to maintain a 'want to play' list that is tracked alongside the ROM library and surfaced in the Excel output.\n\n## Problem\nThere is no way to flag games of interest that aren't yet in the local collection. This was listed as a desired feature from the start.\n\n## Design\n- `data/want_to_play.csv` as the source of truth (manually edited)\n- Columns: `ra_game_id`, `title`, `console`, `notes`, `added_date`\n- Exporter reads this file and merges with RA game data to populate achievement counts\n- Games in want-to-play that are also in the local collection are flagged as 'owned'\n\n## Acceptance Criteria\n- `data/want_to_play.csv` is read if present; gracefully skipped if absent\n- Want to Play sheet shows achievement total for each game (fetched from RA)\n- Games present in both the local collection and the want-to-play list are marked 'owned'\n- `want_to_play.csv` template with correct headers is committed to the repo\n\n## Implements\nRA-OUT-002",
+    "labels": ["type: feature", "layer: output", "priority: later"],
+    "milestone": "M4 - Excel Output & Stats"
+  }
+]
