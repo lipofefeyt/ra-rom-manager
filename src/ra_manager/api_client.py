@@ -80,12 +80,12 @@ class RAClient:
         achievements = data.get("Achievements", {})
         total = len(achievements)
         earned = sum(
-            1 for a in achievements.values()
-            if a.get("DateEarned") or a.get("DateEarnedHardcore")
+            1 for a in achievements.values() if a.get("DateEarned") or a.get("DateEarnedHardcore")
         )
         points_total = sum(a.get("Points", 0) for a in achievements.values())
         points_earned = sum(
-            a.get("Points", 0) for a in achievements.values()
+            a.get("Points", 0)
+            for a in achievements.values()
             if a.get("DateEarned") or a.get("DateEarnedHardcore")
         )
 

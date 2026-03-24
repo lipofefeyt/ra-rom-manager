@@ -21,6 +21,7 @@ def client(monkeypatch, tmp_path):
     monkeypatch.setenv("RA_USERNAME", "testuser")
     monkeypatch.setenv("RA_API_KEY", "testapikey")
     import src.ra_manager.cache as cache_module
+
     monkeypatch.setattr(cache_module, "CACHE_FILE", tmp_path / "cache.json")
     return RAClient()
 
@@ -31,9 +32,7 @@ def _mock_response(data: dict | list, status_code: int = 200) -> MagicMock:
     mock.json.return_value = data
     mock.raise_for_status = MagicMock()
     if status_code >= 400:
-        mock.raise_for_status.side_effect = requests.exceptions.HTTPError(
-            response=mock
-        )
+        mock.raise_for_status.side_effect = requests.exceptions.HTTPError(response=mock)
     return mock
 
 
@@ -98,7 +97,9 @@ class TestGetUserProgress:
         assert result["is_mastered"] is False
 
     def test_result_is_cached(self, client):
-        with patch("requests.get", return_value=_mock_response(self._api_response(5, 10))) as mock_get:
+        with patch(
+            "requests.get", return_value=_mock_response(self._api_response(5, 10))
+        ) as mock_get:
             client.get_user_progress(1141)
             client.get_user_progress(1141)
         mock_get.assert_called_once()
