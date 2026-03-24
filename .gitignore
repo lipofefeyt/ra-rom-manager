@@ -7,3 +7,4 @@ data/*
 .venv/*
 .env
 mock_roms/
+src/*.egg-info/
