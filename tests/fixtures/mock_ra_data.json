@@ -1,0 +1,44 @@
+{
+  "console_4_games": [
+    {
+      "ID": 1141,
+      "Title": "Rayman Advance",
+      "Hashes": ["abc123def456abc123def456abc123de"]
+    },
+    {
+      "ID": 1448,
+      "Title": "Pokémon LeafGreen Version",
+      "Hashes": ["deadbeefdeadbeefdeadbeefdeadbeef", "cafecafecafecafecafecafecafecafe"]
+    },
+    {
+      "ID": 2200,
+      "Title": "Metroid Fusion",
+      "Hashes": ["1234567890abcdef1234567890abcdef"]
+    }
+  ],
+  "user_progress_1141": {
+    "earned": 15,
+    "total": 50,
+    "points_earned": 120,
+    "points_total": 400,
+    "is_mastered": false
+  },
+  "user_progress_1448": {
+    "earned": 73,
+    "total": 73,
+    "points_earned": 580,
+    "points_total": 580,
+    "is_mastered": true
+  },
+  "user_summary": {
+    "points": 4200,
+    "softcore_points": 300,
+    "rank": 18500,
+    "games_played": 42
+  },
+  "want_to_play": [
+    "Castlevania: Aria of Sorrow",
+    "Metroid Fusion",
+    "Rayman"
+  ]
+}
