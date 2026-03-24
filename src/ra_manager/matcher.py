@@ -33,12 +33,8 @@ class HashMatcher:
         df = df.copy()
         df["md5"] = df["md5"].astype(str).str.lower().str.strip()
 
-        df["ra_title"] = df["md5"].map(
-            lambda h: hash_map.get(h, (None, None))[0]
-        )
-        df["ra_game_id"] = df["md5"].map(
-            lambda h: hash_map.get(h, (None, None))[1]
-        )
+        df["ra_title"] = df["md5"].map(lambda h: hash_map.get(h, (None, None))[0])
+        df["ra_game_id"] = df["md5"].map(lambda h: hash_map.get(h, (None, None))[1])
 
         df["matched"] = df["ra_title"].notna()
         df["ra_title"] = df["ra_title"].fillna("Unknown/Unlinked")

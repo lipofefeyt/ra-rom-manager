@@ -66,11 +66,13 @@ class TestBuildMap:
 
 class TestMatch:
     def _make_df(self, md5s: list[str]) -> pd.DataFrame:
-        return pd.DataFrame({
-            "filename": [f"game_{i}.gba" for i in range(len(md5s))],
-            "md5": md5s,
-            "console": ["gba"] * len(md5s),
-        })
+        return pd.DataFrame(
+            {
+                "filename": [f"game_{i}.gba" for i in range(len(md5s))],
+                "md5": md5s,
+                "console": ["gba"] * len(md5s),
+            }
+        )
 
     def test_matched_rom_has_correct_title(self, matcher, game_list):
         hash_map = matcher.build_map(game_list)
@@ -110,10 +112,12 @@ class TestMatch:
 
     def test_mixed_matched_and_unmatched(self, matcher, game_list):
         hash_map = matcher.build_map(game_list)
-        df = self._make_df([
-            "abc123def456abc123def456abc123de",  # matches Rayman
-            "000000000000000000000000notareal",  # no match
-        ])
+        df = self._make_df(
+            [
+                "abc123def456abc123def456abc123de",  # matches Rayman
+                "000000000000000000000000notareal",  # no match
+            ]
+        )
         result = matcher.match(df, hash_map)
         assert result["matched"].sum() == 1
         assert len(result) == 2

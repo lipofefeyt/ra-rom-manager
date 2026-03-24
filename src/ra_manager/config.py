@@ -8,11 +8,11 @@ load_dotenv()
 # Console ID → name mapping as defined by RetroAchievements
 # Full list: https://retroachievements.org/APIv1.php#get-consoleid
 CONSOLES = {
-    3:  "SNES",
-    4:  "GBA",
-    5:  "GB",
-    6:  "GBC",
-    7:  "NES",
+    3: "SNES",
+    4: "GBA",
+    5: "GB",
+    6: "GBC",
+    7: "NES",
     11: "PlayStation",
     12: "PlayStation 2",
     13: "PC Engine",
@@ -28,19 +28,19 @@ CONSOLES = {
 # Reverse map: folder name (lowercase) → console ID
 # Scanner uses this to infer console from subfolder name
 FOLDER_TO_CONSOLE_ID = {
-    "snes":  3,
-    "gba":   4,
-    "gb":    5,
-    "gbc":   6,
-    "nes":   7,
-    "psx":   11,
-    "ps1":   11,
-    "ps2":   12,
-    "pce":   13,
-    "gg":    15,
-    "sms":   24,
-    "psp":   21,
-    "md":    23,
+    "snes": 3,
+    "gba": 4,
+    "gb": 5,
+    "gbc": 6,
+    "nes": 7,
+    "psx": 11,
+    "ps1": 11,
+    "ps2": 12,
+    "pce": 13,
+    "gg": 15,
+    "sms": 24,
+    "psp": 21,
+    "md": 23,
     "genesis": 23,
 }
 

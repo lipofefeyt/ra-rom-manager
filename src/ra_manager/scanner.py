@@ -36,10 +36,7 @@ class ROMScanner:
         """
         try:
             with zipfile.ZipFile(file_path, "r") as zf:
-                entries = [
-                    e for e in zf.namelist()
-                    if Path(e).suffix.lower() in DIRECT_EXTENSIONS
-                ]
+                entries = [e for e in zf.namelist() if Path(e).suffix.lower() in DIRECT_EXTENSIONS]
                 if not entries:
                     return None, "no supported ROM inside zip"
 
@@ -92,7 +89,15 @@ class ROMScanner:
 
                 # Skip .cue descriptors — hash their paired .bin instead
                 if suffix in SKIP_EXTENSIONS:
-                    rom_data.append(_skipped_row(file, suffix, file_path, console, ".cue descriptor — paired .bin will be hashed"))
+                    rom_data.append(
+                        _skipped_row(
+                            file,
+                            suffix,
+                            file_path,
+                            console,
+                            ".cue descriptor — paired .bin will be hashed",
+                        )
+                    )
                     continue
 
                 if suffix in ZIP_EXTENSIONS:
@@ -118,6 +123,7 @@ class ROMScanner:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _parse_cue_bin(cue_path: Path) -> str | None:
     """

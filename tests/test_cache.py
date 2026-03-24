@@ -1,6 +1,4 @@
 import json
-import time
-from pathlib import Path
 
 import pytest
 
@@ -18,6 +16,7 @@ TTL_SHORT = 1  # 1 second, for TTL expiry tests
 def tmp_cache(tmp_path, monkeypatch):
     """Redirect cache file to a temp directory for every test."""
     import src.ra_manager.cache as cache_module
+
     cache_file = tmp_path / "cache.json"
     monkeypatch.setattr(cache_module, "CACHE_FILE", cache_file)
     return cache_file
@@ -55,6 +54,7 @@ class TestTTL:
         save_to_cache("console_5", [{"ID": 2}])
         # Manually backdate the timestamp
         import src.ra_manager.cache as cache_module
+
         raw = json.loads(cache_module.CACHE_FILE.read_text())
         raw["console_5"]["timestamp"] -= 7200  # 2 hours ago
         cache_module.CACHE_FILE.write_text(json.dumps(raw))
@@ -88,6 +88,7 @@ class TestClearAll:
 class TestCorruptCache:
     def test_corrupt_cache_file_returns_none(self, tmp_path, monkeypatch):
         import src.ra_manager.cache as cache_module
+
         cache_module.CACHE_FILE.write_text("not valid json", encoding="utf-8")
         result = load_cached("any_key", ttl=3600)
         assert result is None
