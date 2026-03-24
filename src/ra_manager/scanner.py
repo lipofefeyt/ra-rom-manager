@@ -29,7 +29,7 @@ class ROMScanner:
         print(f"Scanning directory: {self.rom_dir}")
         rom_data = []
 
-        for root, dirs, files in os.walk(self.rom_dir):
+        for root, _dirs, files in os.walk(self.rom_dir):
 
             for file in files:
                 file_path = Path(root) / file

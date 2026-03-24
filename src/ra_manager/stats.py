@@ -1,6 +1,6 @@
 def get_completion_label(awarded, total):
     """Calculates if you've mastered, started, or ignored a game."""
-    
+
     if awarded == 0:
         return "Unplayed"
     if awarded == total:
@@ -11,7 +11,7 @@ def get_completion_label(awarded, total):
 
 def add_stats_to_df(df, client):
     """Enriches your CSV with RA progress data."""
-    
+
     # This maps the logic to every row in your CSV
     df['Status'] = df.apply(lambda row:
         get_completion_label(
