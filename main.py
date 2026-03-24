@@ -1,7 +1,10 @@
-from src.ra_manager.api_client import RAClient
+import pandas as pd
+
+from src.ra_manager.api_client import RAClient, RAClientError
 from src.ra_manager.config import CONSOLES, FOLDER_TO_CONSOLE_ID
 from src.ra_manager.matcher import HashMatcher
 from src.ra_manager.scanner import ROMScanner
+from src.ra_manager.stats import enrich_with_progress
 
 
 def main():
@@ -32,7 +35,12 @@ def main():
         console_name = CONSOLES[console_id]
         print(f"📥 Fetching RA hash list for {console_name} (ID {console_id})...")
 
-        ra_game_list = client.get_console_game_hashes(console_id)
+        try:
+            ra_game_list = client.get_console_game_hashes(console_id)
+        except RAClientError as e:
+            print(f"❌ {console_name}: {e} — skipping.")
+            continue
+
         if not ra_game_list:
             print(f"❌ No data returned for {console_name} — skipping.")
             continue
@@ -49,14 +57,28 @@ def main():
         print("❌ No consoles could be matched. Check folder names and .env config.")
         return
 
-    # 3. Combine and export
-    import pandas as pd
-
     final_df = pd.concat(all_matched, ignore_index=True)
-    final_df.to_csv("data/identified_roms.csv", index=False)
 
-    total_matched = final_df["matched"].sum()
-    print(f"\n🎮 Done! {total_matched}/{len(final_df)} ROMs matched across all consoles.")
+    # 3. Fetch achievement progress for all matched ROMs
+    matched_count = final_df["matched"].sum()
+    print(f"\n🏆 Fetching achievement progress for {matched_count} matched ROMs...")
+    final_df = enrich_with_progress(final_df, client)
+
+    # 4. Print summary
+    mastered = final_df["is_mastered"].sum()
+    in_progress = (final_df["status"].str.startswith("In Progress")).sum()
+    unplayed = (final_df["status"] == "Unplayed").sum()
+
+    print("\n📊 Summary:")
+    print(f"   Total ROMs    : {len(final_df)}")
+    print(f"   Matched       : {final_df['matched'].sum()}")
+    print(f"   Mastered 🏆   : {mastered}")
+    print(f"   In Progress   : {in_progress}")
+    print(f"   Unplayed      : {unplayed}")
+
+    # 5. Export
+    final_df.to_csv("data/identified_roms.csv", index=False)
+    print("\n💾 Saved to data/identified_roms.csv")
 
 
 if __name__ == "__main__":
