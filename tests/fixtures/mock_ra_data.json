@@ -3,17 +3,17 @@
     {
       "ID": 1141,
       "Title": "Rayman Advance",
-      "Hashes": ["abc123def456abc123def456abc123de"]
+      "Hashes": ["fb20d6009c7400f37581f81ae5b1e917"]
     },
     {
       "ID": 1448,
       "Title": "Pokémon LeafGreen Version",
-      "Hashes": ["deadbeefdeadbeefdeadbeefdeadbeef", "cafecafecafecafecafecafecafecafe"]
+      "Hashes": ["dfc6fdf38b3c277b6f176cd7c25712c8"]
     },
     {
       "ID": 2200,
       "Title": "Metroid Fusion",
-      "Hashes": ["1234567890abcdef1234567890abcdef"]
+      "Hashes": ["6dab0ac88b4e438092c2a90338e51a1b"]
     }
   ],
   "user_progress_1141": {
