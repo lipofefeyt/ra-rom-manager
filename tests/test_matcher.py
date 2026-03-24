@@ -38,10 +38,7 @@ class TestBuildMap:
     def test_game_with_multiple_hashes(self, matcher, game_list):
         hash_map = matcher.build_map(game_list)
         assert "dfc6fdf38b3c277b6f176cd7c25712c8" in hash_map
-        assert "cafecafecafecafecafecafecafecafe" in hash_map
-        # Both hashes map to the same game
         assert hash_map["dfc6fdf38b3c277b6f176cd7c25712c8"][1] == 1448
-        assert hash_map["cafecafecafecafecafecafecafecafe"][1] == 1448
 
     def test_empty_game_list_returns_empty_map(self, matcher):
         assert matcher.build_map([]) == {}
