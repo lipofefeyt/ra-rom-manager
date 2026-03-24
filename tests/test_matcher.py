@@ -90,7 +90,7 @@ class TestMatch:
         hash_map = matcher.build_map(game_list)
         df = self._make_df(["abc123def456abc123def456abc123de"])
         result = matcher.match(df, hash_map)
-        assert result.iloc[0]["matched"] is True
+        assert result.iloc[0]["matched"] == True
 
     def test_unmatched_rom_gets_unknown_title(self, matcher, game_list):
         hash_map = matcher.build_map(game_list)
@@ -102,7 +102,7 @@ class TestMatch:
         hash_map = matcher.build_map(game_list)
         df = self._make_df(["000000000000000000000000notareal"])
         result = matcher.match(df, hash_map)
-        assert result.iloc[0]["matched"] is False
+        assert result.iloc[0]["matched"] == False
 
     def test_unmatched_rom_has_no_game_id(self, matcher, game_list):
         hash_map = matcher.build_map(game_list)
@@ -126,7 +126,7 @@ class TestMatch:
         hash_map = matcher.build_map(game_list)
         df = self._make_df(["  ABC123DEF456ABC123DEF456ABC123DE  "])
         result = matcher.match(df, hash_map)
-        assert result.iloc[0]["matched"] is True
+        assert result.iloc[0]["matched"] == True
 
     def test_original_df_not_mutated(self, matcher, game_list):
         hash_map = matcher.build_map(game_list)

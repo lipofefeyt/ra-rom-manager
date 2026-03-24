@@ -18,7 +18,7 @@ class HashMatcher:
 
             if isinstance(hashes, list):
                 for h in hashes:
-                    if h:
+                    if h and h.strip():
                         hash_map[h.lower().strip()] = (title, game_id)
             elif isinstance(hashes, str) and hashes:
                 hash_map[hashes.lower().strip()] = (title, game_id)
