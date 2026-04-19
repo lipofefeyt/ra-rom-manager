@@ -124,3 +124,18 @@ class RAClient:
 
         save_to_cache(cache_key, result)
         return result
+
+    def get_game_hashes(self, game_id: int, force_refresh: bool = False) -> list[dict]:
+        """
+        Fetches accepted ROM hashes for a specific game to suggest correct dumps.
+        Returns:[{'MD5': str, 'Name': str, 'Labels': list, 'PatchUrl': str}]
+        """
+        cache_key = f"game_hashes_{game_id}"
+        if not force_refresh:
+            cached = load_cached(cache_key, TTL_HASH_LIST) # Reuse the 24h TTL
+            if cached is not None:
+                return cached
+
+        result = self._get("API_GetGameHashes.php", {"i": game_id})
+        save_to_cache(cache_key, result)
+        return result

@@ -46,9 +46,52 @@ def main():
             print(f"❌ No data returned for {console_name} — skipping.")
             continue
 
+        # Create the matcher
         hash_map = matcher.build_map(ra_game_list)
         console_df = df[df["console"].str.lower() == folder_name].copy()
         matched_df = matcher.match(console_df, hash_map)
+
+        # Grab unmatched rows directly from matched_df so they share the same structure
+        unmatched_df = matched_df[~matched_df["matched"]].copy()
+
+        if not unmatched_df.empty:
+            print(f"🔍 Found {len(unmatched_df)} unmatched ROMs. Attempting to find correct dumps...")
+            suggestions_df = matcher.suggest_matches(unmatched_df, ra_game_list)
+            
+            for col in["suggested_filename", "suggested_md5", "patch_url"]:
+                if col not in suggestions_df.columns:
+                    suggestions_df[col] = pd.NA
+
+            for idx, row in suggestions_df.iterrows():
+                if pd.notna(row.get("suggested_game_id")):
+                    print(f"   💡 Best guess for '{row['filename']}': {row['suggested_title']}")
+                    
+                    # Fetch the raw response from the API
+                    raw_hashes = client.get_game_hashes(int(row["suggested_game_id"]))
+                    
+                    # Safely extract the list whether the API returned a Dict or a List
+                    if isinstance(raw_hashes, dict):
+                        hash_list = raw_hashes.get("Results",[])
+                    else:
+                        hash_list = raw_hashes
+
+                    # If we successfully found valid hashes, pick the first one
+                    if hash_list and len(hash_list) > 0:
+                        best_hash = hash_list[0] 
+                        suggestions_df.at[idx, "suggested_filename"] = best_hash.get("Name")
+                        suggestions_df.at[idx, "suggested_md5"] = best_hash.get("MD5")
+                        suggestions_df.at[idx, "patch_url"] = best_hash.get("PatchUrl")
+                    else:
+                        print(f"   ⚠️  Could not find any accepted file names for {row['suggested_title']}")
+                else:
+                    print(f"   ❓ Could not find a fuzzy match for: {row['filename']}")
+
+            for col in["suggested_title", "suggested_filename", "suggested_md5", "patch_url"]:
+                if col not in matched_df.columns:
+                    matched_df[col] = pd.NA
+                matched_df.update(suggestions_df[[col]])
+
+        # Now all_matched will actually contain the suggestions for the Excel export
         all_matched.append(matched_df)
 
         matched_count = matched_df["matched"].sum()
