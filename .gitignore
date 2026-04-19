@@ -1,13 +1,18 @@
-test.py
-
+# Python stuff
 __pycache__
 *.pyc
 
 data/*
 .venv/*
 .env
-mock_roms/
 src/*.egg-info/
 
+# Project IDX config
 .idx
+
+# Excel files
 *.xlsx
+
+# ROM folders
+.roms
+mock_roms/

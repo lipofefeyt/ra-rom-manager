@@ -10,8 +10,8 @@ load_dotenv()
 CONSOLES = {
     2: "N64",
     3: "SNES",
-    4: "GBA",
-    5: "GB",
+    4: "GB",
+    5: "GBA",
     6: "GBC",
     7: "NES",
     12: "PlayStation",
@@ -31,9 +31,9 @@ CONSOLES = {
 # Scanner uses this to infer console from subfolder name
 FOLDER_TO_CONSOLE_ID = {
     "n64": 2,  # Nintendo 64
-    "snes": 3,  # Nintendo SNES
-    "gba": 4,  # Nintendo Game Boy Advance
-    "gb": 5,  # Nintendo Game Boy
+    "snes": 3,  # Nintendo SNES1
+    "gb": 4,  # Nintendo Game Boy
+    "gba": 5,  # Nintendo Game Boy Advance
     "gbc": 6,  # Nintendo Game Boy Color
     "nes": 7,  # Nintendo NES
     "psx": 12,  # Sony Playstation 1
