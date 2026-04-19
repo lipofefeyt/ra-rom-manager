@@ -100,5 +100,11 @@
     "body": "## Objective\nCreate an Excel sheet listing all unmatched ROMs alongside their suggested correct dump filename, MD5, and patch URL.\n\n## Design\n- Add `_write_unmatched_sheet()` to `exporter.py`\n- Make patch URLs clickable hyperlinks\n\n## Implements\nRA-DEV-054",
     "labels":["type: feature", "layer: output", "priority: now"],
     "milestone": "M5 - ROM Sourcing Hints"
+  },
+  {
+    "title": "[CORE] Add strict hash-based auto-renaming tool",
+    "body": "## Objective\nProvide a safe, opt-in mechanism to automatically rename local ROM files to their official RetroAchievements titles.\n\n## Design\n- Create `renamer.py` with sanitization logic to strip illegal OS characters (e.g., colons, slashes).\n- Only process files where `matched == True`.\n- Add `--rename` CLI flag to `main.py`.\n\n## Implements\nRA-DEV-070",
+    "labels":["type: feature", "layer: core", "priority: next"],
+    "milestone": "M5.5: File Management"
   }
 ]

@@ -1,3 +1,4 @@
+import argparse
 import pandas as pd
 
 from src.ra_manager.api_client import RAClient, RAClientError
@@ -6,9 +7,17 @@ from src.ra_manager.exporter import export
 from src.ra_manager.matcher import HashMatcher
 from src.ra_manager.scanner import ROMScanner
 from src.ra_manager.stats import enrich_with_progress
-
+from src.ra_manager.renamer import rename_roms
 
 def main():
+    parser = argparse.ArgumentParser(description="RetroAchievements ROM Manager")
+    parser.add_argument(
+        "--rename", 
+        action="store_true", 
+        help="Auto-rename perfectly matched ROMs to their official RA titles"
+    )
+    args = parser.parse_args()
+
     print("--- RetroAchievements ROM Manager ---")
 
     scanner = ROMScanner()
@@ -136,6 +145,10 @@ def main():
     output_path = export(final_df, user_summary)
     print(f"\n💾 Saved to {output_path}")
 
+    # If --rename is used
+    if args.rename:
+        print("\n🏷️  Auto-Renaming Matched ROMs...")
+        rename_roms(final_df)
 
 if __name__ == "__main__":
     main()
