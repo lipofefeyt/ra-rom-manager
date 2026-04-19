@@ -26,11 +26,13 @@ class TestGetCompletionLabel:
 
 class TestEnrichWithProgress:
     def _make_df(self, matched: list[bool], game_ids: list) -> pd.DataFrame:
-        return pd.DataFrame({
-            "filename": [f"game_{i}.gba" for i in range(len(matched))],
-            "matched": matched,
-            "ra_game_id": game_ids,
-        })
+        return pd.DataFrame(
+            {
+                "filename": [f"game_{i}.gba" for i in range(len(matched))],
+                "matched": matched,
+                "ra_game_id": game_ids,
+            }
+        )
 
     def _mock_client(self, progress: dict) -> MagicMock:
         client = MagicMock()
@@ -40,8 +42,13 @@ class TestEnrichWithProgress:
     def test_matched_rom_gets_progress_columns(self):
         df = self._make_df([True], [1141])
         client = self._mock_client(
-            {"earned": 15, "total": 50, "points_earned": 120,
-             "points_total": 400, "is_mastered": False}
+            {
+                "earned": 15,
+                "total": 50,
+                "points_earned": 120,
+                "points_total": 400,
+                "is_mastered": False,
+            }
         )
         result = enrich_with_progress(df, client)
         assert result.iloc[0]["earned"] == 15
@@ -51,8 +58,13 @@ class TestEnrichWithProgress:
     def test_mastered_rom_flagged_correctly(self):
         df = self._make_df([True], [1448])
         client = self._mock_client(
-            {"earned": 73, "total": 73, "points_earned": 580,
-             "points_total": 580, "is_mastered": True}
+            {
+                "earned": 73,
+                "total": 73,
+                "points_earned": 580,
+                "points_total": 580,
+                "is_mastered": True,
+            }
         )
         result = enrich_with_progress(df, client)
         assert result.iloc[0]["is_mastered"]
@@ -75,8 +87,13 @@ class TestEnrichWithProgress:
     def test_original_df_not_mutated(self):
         df = self._make_df([True], [1141])
         client = self._mock_client(
-            {"earned": 10, "total": 20, "points_earned": 50,
-             "points_total": 100, "is_mastered": False}
+            {
+                "earned": 10,
+                "total": 20,
+                "points_earned": 50,
+                "points_total": 100,
+                "is_mastered": False,
+            }
         )
         original_cols = set(df.columns)
         enrich_with_progress(df, client)
@@ -85,8 +102,13 @@ class TestEnrichWithProgress:
     def test_mixed_matched_and_unmatched(self):
         df = self._make_df([True, False, True], [1141, None, 2200])
         client = self._mock_client(
-            {"earned": 5, "total": 10, "points_earned": 50,
-             "points_total": 100, "is_mastered": False}
+            {
+                "earned": 5,
+                "total": 10,
+                "points_earned": 50,
+                "points_total": 100,
+                "is_mastered": False,
+            }
         )
         result = enrich_with_progress(df, client)
         assert result.iloc[1]["status"] == "Unmatched"

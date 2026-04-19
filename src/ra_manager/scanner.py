@@ -8,7 +8,7 @@ import pandas as pd
 from .config import get_rom_path
 
 # Extensions hashed directly
-DIRECT_EXTENSIONS = {".gba", ".gb", ".gbc", ".sfc", ".smc", ".nes", ".iso", ".bin", ".chd", ".iso", ".rvz"}
+DIRECT_EXTENSIONS = {".gba", ".gb", ".gbc", ".sfc", ".smc", ".nes", ".iso", ".bin", ".chd", ".rvz"}
 
 # Extensions that are zip archives containing a ROM
 ZIP_EXTENSIONS = {".zip"}

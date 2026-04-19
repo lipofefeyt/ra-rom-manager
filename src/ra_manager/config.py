@@ -8,12 +8,12 @@ load_dotenv()
 # Console ID → name mapping as defined by RetroAchievements
 # Full list: https://retroachievements.org/APIv1.php#get-consoleid
 CONSOLES = {
-    2:  "N64",
-    3:  "SNES",
-    4:  "GBA",
-    5:  "GB",
-    6:  "GBC",
-    7:  "NES",
+    2: "N64",
+    3: "SNES",
+    4: "GBA",
+    5: "GB",
+    6: "GBC",
+    7: "NES",
     11: "PlayStation",
     12: "PlayStation 2",
     13: "PC Engine",
@@ -30,26 +30,26 @@ CONSOLES = {
 # Reverse map: folder name (lowercase) → console ID
 # Scanner uses this to infer console from subfolder name
 FOLDER_TO_CONSOLE_ID = {
-    "n64": 2,           # Nintendo 64
-    "snes": 3,          # Nintendo SNES
-    "gba": 4,           # Nintendo Game Boy Advance
-    "gb": 5,            # Nintendo Game Boy
-    "gbc": 6,           # Nintendo Game Boy Color
-    "nes": 7,           # Nintendo NES
-    "psx": 11,          # Sony Playstation 1
-    "ps1": 11,          # Sony Playstation 1
-    "ps2": 12,          # Sony Playstation 2
-    "pce": 13,          # NEC PC Engine
-    "gg": 15,           # SEGA Game Gear
-    "gamecube": 16,     # Nintendo Game Cube
-    "gc": 16,           # Nintendo Game Cube
-    "nds": 18,          # Nintendo DS
-    "sms": 24,          # SEGA Master System
-    "psp": 21,          # Sony Playstation Portable
-    "md": 23,           # SEGA Mega Drive
-    "genesis": 23,      # SEGA Genesis
-    "saturn": 39,       # SEGA Saturn   
-    "neogeo": 56        # SNK NeoGeo
+    "n64": 2,  # Nintendo 64
+    "snes": 3,  # Nintendo SNES
+    "gba": 4,  # Nintendo Game Boy Advance
+    "gb": 5,  # Nintendo Game Boy
+    "gbc": 6,  # Nintendo Game Boy Color
+    "nes": 7,  # Nintendo NES
+    "psx": 11,  # Sony Playstation 1
+    "ps1": 11,  # Sony Playstation 1
+    "ps2": 12,  # Sony Playstation 2
+    "pce": 13,  # NEC PC Engine
+    "gg": 15,  # SEGA Game Gear
+    "gamecube": 16,  # Nintendo Game Cube
+    "gc": 16,  # Nintendo Game Cube
+    "nds": 18,  # Nintendo DS
+    "sms": 24,  # SEGA Master System
+    "psp": 21,  # Sony Playstation Portable
+    "md": 23,  # SEGA Mega Drive
+    "genesis": 23,  # SEGA Genesis
+    "saturn": 39,  # SEGA Saturn
+    "neogeo": 56,  # SNK NeoGeo
 }
 
 

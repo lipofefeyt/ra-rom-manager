@@ -132,7 +132,7 @@ class RAClient:
         """
         cache_key = f"game_hashes_{game_id}"
         if not force_refresh:
-            cached = load_cached(cache_key, TTL_HASH_LIST) # Reuse the 24h TTL
+            cached = load_cached(cache_key, TTL_HASH_LIST)  # Reuse the 24h TTL
             if cached is not None:
                 return cached
 

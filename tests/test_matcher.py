@@ -63,11 +63,13 @@ class TestBuildMap:
 
 class TestMatch:
     def _make_df(self, md5s: list[str]) -> pd.DataFrame:
-        return pd.DataFrame({
-            "filename": [f"game_{i}.gba" for i in range(len(md5s))],
-            "md5": md5s,
-            "console": ["gba"] * len(md5s),
-        })
+        return pd.DataFrame(
+            {
+                "filename": [f"game_{i}.gba" for i in range(len(md5s))],
+                "md5": md5s,
+                "console": ["gba"] * len(md5s),
+            }
+        )
 
     def test_matched_rom_has_correct_title(self, matcher, game_list):
         hash_map = matcher.build_map(game_list)
@@ -107,10 +109,12 @@ class TestMatch:
 
     def test_mixed_matched_and_unmatched(self, matcher, game_list):
         hash_map = matcher.build_map(game_list)
-        df = self._make_df([
-            "fb20d6009c7400f37581f81ae5b1e917",  # matches Rayman
-            "000000000000000000000000notareal",   # no match
-        ])
+        df = self._make_df(
+            [
+                "fb20d6009c7400f37581f81ae5b1e917",  # matches Rayman
+                "000000000000000000000000notareal",  # no match
+            ]
+        )
         result = matcher.match(df, hash_map)
         assert result["matched"].sum() == 1
         assert len(result) == 2
@@ -128,17 +132,19 @@ class TestMatch:
         matcher.match(df, hash_map)
         assert set(df.columns) == original_cols
 
+
 class TestSuggestMatches:
     def test_finds_close_title(self, matcher, game_list):
         # Provide an unmatched dataframe with a slightly misspelled/modified filename
-        df = pd.DataFrame({"filename":["Rayman_Advance_USA.gba"]})
+        df = pd.DataFrame({"filename": ["Rayman_Advance_USA.gba"]})
         result = matcher.suggest_matches(df, game_list)
-        
+
         assert result.iloc[0]["suggested_title"] == "Rayman Advance"
         assert result.iloc[0]["suggested_game_id"] == 1141
 
     def test_returns_none_on_garbage_filename(self, matcher, game_list):
         df = pd.DataFrame({"filename": ["hjksdfhjk.gba"]})
         result = matcher.suggest_matches(df, game_list)
-        
-        assert pd.isna(result.iloc[0]["suggested_title"]) or result.iloc[0]["suggested_title"] is None
+
+        is_none = result.iloc[0]["suggested_title"] is None
+        assert pd.isna(result.iloc[0]["suggested_title"]) or is_none
