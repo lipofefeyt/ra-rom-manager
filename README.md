@@ -54,6 +54,16 @@ Output is written to `data/ra_collection.xlsx`.
 
 ---
 
+## How It Works (Under the Hood)
+
+For those wanting to understand how the manager processes data:
+1. **Scanner**: Walks your ROM folder, identifies the console via the subfolder name, and hashes the file into an MD5 string. It skips descriptors (like `.cue`) and extracts `.zip` contents in memory automatically!
+2. **Matcher & API**: Compares your local hashes with RetroAchievements' database. Everything is aggressively cached locally (`data/cache.json`) so your API limits stay safe.
+3. **Stats**: If a ROM matches, it fetches your personal account's achievement progress for that game.
+4. **Sourcing Hints**: If a ROM *doesn't* match, the system uses fuzzy-string matching on your filename to guess what game you *meant* to add, and calls RA to tell you the exact No-Intro filename you should download instead.
+
+---
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` and fill in:

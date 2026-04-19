@@ -128,3 +128,20 @@ class TestSummarySheet:
         export(sample_df, user_summary=None)
         wb = load_workbook(output_path)
         assert "Summary" in wb.sheetnames
+
+class TestUnmatchedSheet:
+    def test_unmatched_sheet_created_if_data_exists(self, sample_df, output_path):
+        # Modify sample_df to have M5 suggestion columns
+        sample_df["suggested_title"] = ["", "", "", "Suggested Unknown Game"]
+        sample_df["suggested_filename"] =["", "", "", "Unknown (USA).gba"]
+        sample_df["suggested_md5"] =["", "", "", "12345abcdef"]
+        sample_df["patch_url"] = ["", "", "", "http://patch.com"]
+        
+        export(sample_df)
+        wb = load_workbook(output_path)
+        
+        assert "Unmatched ROMs" in wb.sheetnames
+        ws = wb["Unmatched ROMs"]
+        
+        # Row 1 is header, Row 2 should be the unmatched ROM
+        assert ws.cell(row=2, column=3).value == "Suggested Unknown Game"

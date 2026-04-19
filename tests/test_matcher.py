@@ -127,3 +127,18 @@ class TestMatch:
         original_cols = set(df.columns)
         matcher.match(df, hash_map)
         assert set(df.columns) == original_cols
+
+class TestSuggestMatches:
+    def test_finds_close_title(self, matcher, game_list):
+        # Provide an unmatched dataframe with a slightly misspelled/modified filename
+        df = pd.DataFrame({"filename":["Rayman_Advance_USA.gba"]})
+        result = matcher.suggest_matches(df, game_list)
+        
+        assert result.iloc[0]["suggested_title"] == "Rayman Advance"
+        assert result.iloc[0]["suggested_game_id"] == 1141
+
+    def test_returns_none_on_garbage_filename(self, matcher, game_list):
+        df = pd.DataFrame({"filename": ["hjksdfhjk.gba"]})
+        result = matcher.suggest_matches(df, game_list)
+        
+        assert pd.isna(result.iloc[0]["suggested_title"]) or result.iloc[0]["suggested_title"] is None
