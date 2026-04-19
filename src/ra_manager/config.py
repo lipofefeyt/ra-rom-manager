@@ -14,13 +14,13 @@ CONSOLES = {
     5: "GB",
     6: "GBC",
     7: "NES",
-    11: "PlayStation",
-    12: "PlayStation 2",
+    12: "PlayStation",
+    21: "PlayStation 2",
     13: "PC Engine",
     15: "Game Gear",
     16: "GameCube",
     18: "Nintendo DS",
-    21: "PlayStation Portable",
+    41: "PlayStation Portable",
     23: "Mega Drive",
     24: "Master System",
     39: "Saturn",
@@ -36,18 +36,18 @@ FOLDER_TO_CONSOLE_ID = {
     "gb": 5,  # Nintendo Game Boy
     "gbc": 6,  # Nintendo Game Boy Color
     "nes": 7,  # Nintendo NES
-    "psx": 11,  # Sony Playstation 1
-    "ps1": 11,  # Sony Playstation 1
-    "ps2": 12,  # Sony Playstation 2
+    "psx": 12,  # Sony Playstation 1
+    "ps1": 12,  # Sony Playstation 1
+    "ps2": 21,  # Sony Playstation 2
     "pce": 13,  # NEC PC Engine
     "gg": 15,  # SEGA Game Gear
     "gamecube": 16,  # Nintendo Game Cube
     "gc": 16,  # Nintendo Game Cube
     "nds": 18,  # Nintendo DS
-    "sms": 24,  # SEGA Master System
-    "psp": 21,  # Sony Playstation Portable
+    "psp": 41,  # Sony Playstation Portable
     "md": 23,  # SEGA Mega Drive
     "genesis": 23,  # SEGA Genesis
+    "sms": 24,  # SEGA Master System
     "saturn": 39,  # SEGA Saturn
     "neogeo": 56,  # SNK NeoGeo
 }
