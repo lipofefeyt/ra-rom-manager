@@ -22,7 +22,7 @@ def rename_roms(df: pd.DataFrame) -> None:
     Safely renames perfectly matched ROMs to their official RA titles.
     """
     # LAYER 1 SAFETY: Only process perfectly matched ROMs
-    matched_df = df[df["matched"] == True]
+    matched_df = df[df["matched"]]
 
     if matched_df.empty:
         print("   ⚠️  No perfectly matched ROMs found to rename.")
@@ -31,7 +31,7 @@ def rename_roms(df: pd.DataFrame) -> None:
     renamed_count = 0
     for _, row in matched_df.iterrows():
         old_path = Path(row["path"])
-        
+
         # Ensure the file actually exists on disk
         if not old_path.exists():
             continue
@@ -39,7 +39,7 @@ def rename_roms(df: pd.DataFrame) -> None:
         # LAYER 2 SAFETY: Sanitize the official RA title
         ra_title = str(row["ra_title"])
         safe_title = sanitize_filename(ra_title)
-        
+
         # Keep the exact same file extension (.zip, .iso, .chd)
         extension = old_path.suffix
         new_name = f"{safe_title}{extension}"
