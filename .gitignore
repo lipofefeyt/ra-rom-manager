@@ -8,3 +8,6 @@ data/*
 .env
 mock_roms/
 src/*.egg-info/
+
+.idx
+*.xlsx

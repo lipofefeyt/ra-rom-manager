@@ -28,6 +28,15 @@ CONSOLE_COLUMNS = [
     ("Console",        "console",         12),
 ]
 
+# Unmatched sheet columns: (header label, DataFrame column, width)
+UNMATCHED_COLUMNS =[
+    ("Original Filename", "filename",           30),
+    ("Console",           "console",            12),
+    ("Suggested Title",   "suggested_title",    35),
+    ("Expected Dump Name","suggested_filename", 45),
+    ("Expected MD5",      "suggested_md5",      35),
+    ("Patch URL",         "patch_url",          30),
+]
 
 def _header_font(bold: bool = True) -> Font:
     return Font(name="Arial", bold=bold, color=COLOUR_HEADER_FG, size=11)
@@ -203,6 +212,42 @@ def _write_want_to_play_sheet(wb: Workbook) -> None:
             name="Arial", italic=True, color="999999"
         )
 
+def _write_unmatched_sheet(wb: Workbook, df: pd.DataFrame) -> None:
+    ws = wb.create_sheet(title="Unmatched ROMs")
+    
+    headers = [col[0] for col in UNMATCHED_COLUMNS]
+    _write_header_row(ws, headers)
+    _set_column_widths(ws, UNMATCHED_COLUMNS)
+    ws.freeze_panes = "A2"
+
+    # Filter only unmatched ROMs
+    unmatched_df = df[df.get("matched", True) == False]
+
+    if unmatched_df.empty:
+        ws.cell(row=2, column=1, value="All ROMs matched perfectly!").font = Font(
+            name="Arial", italic=True, color="999999"
+        )
+        return
+
+    for row_idx, (_, row) in enumerate(unmatched_df.iterrows(), start=2):
+        alt_colour = COLOUR_ALT_ROW if row_idx % 2 == 0 else None
+
+        for col_idx, (_, col_key, _) in enumerate(UNMATCHED_COLUMNS, start=1):
+            value = row.get(col_key, "")
+            if pd.isna(value):
+                value = ""
+            
+            cell = ws.cell(row=row_idx, column=col_idx, value=value)
+            cell.font = _body_font()
+            cell.alignment = Alignment(vertical="center")
+
+            # Make Patch URL a clickable hyperlink if it exists
+            if col_key == "patch_url" and value:
+                cell.hyperlink = value
+                cell.font = Font(name="Arial", size=10, color="0563C1", underline="single")
+
+            if alt_colour:
+                cell.fill = _row_fill(alt_colour)
 
 def export(
     df: pd.DataFrame,
@@ -233,7 +278,10 @@ def export(
         console_df = df[df["console"].str.upper() == console].copy()
         _write_console_sheet(wb, console, console_df)
 
-    # Want to play last
+    # Write the unmatched sheet
+    _write_unmatched_sheet(wb, df)
+
+    # Write the want to play sheet 
     _write_want_to_play_sheet(wb)
 
     wb.save(OUTPUT_PATH)
