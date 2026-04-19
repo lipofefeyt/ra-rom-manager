@@ -1,5 +1,6 @@
 import difflib
 import re
+import unicodedata
 
 import pandas as pd
 
@@ -7,24 +8,25 @@ import pandas as pd
 class HashMatcher:
     """Builds a hash → RA game lookup and matches it against a scanned ROM DataFrame."""
 
-    def normalize(self, name: str) -> str:
+    @staticmethod
+    def normalize(name: str) -> str:
         """
         Aggressively cleans a title for comparison.
-        Lives as a staticmethod so it can be called via self.normalize.
         """
-        # 1. Remove brackets and parentheses e.g., (Europe) or [!]
-        n = re.sub(r"\(.*?\)|\[.*?\]", "", name)
+        # 0. Convert Accents to regular letters (e.g., Pokémon -> Pokemon)
+        n = unicodedata.normalize('NFKD', name).encode('ASCII', 'ignore').decode('utf-8')
+
+        # 1. Remove brackets, parentheses, AND tildes (e.g., (Europe), [!], ~Hack~)
+        n = re.sub(r"\(.*?\)|\[.*?\]|~.*?~", "", n)
         
-        # 2. Remove "The" as a standalone word (at start, end, or middle)
-        # This handles "The Legend of Zelda" and "Legend of Zelda, The"
-        n = re.sub(r"\bthe\b", "", n, flags=re.IGNORECASE)
+        # 2. Remove "The" and "Version" as standalone words to prevent difflib hijacking
+        n = re.sub(r"\b(the|version)\b", "", n, flags=re.IGNORECASE)
         
         # 3. Strip all non-alphanumeric chars EXCEPT spaces
-        # We keep spaces so titles like "God of War" and "God of War II" stay distinct
         n = n.lower().strip()
         n = re.sub(r"[^a-z0-9\s]", "", n)
 
-        # 4. Clean up double spaces and return
+        # 4. Clean up double spaces
         return " ".join(n.split())
 
     def build_map(self, ra_game_list: list) -> dict:
@@ -69,7 +71,14 @@ class HashMatcher:
 
         # 2. Create a dictionary of {normalized_title: original_title}
         # Note the use of self.normalize here!
-        norm_to_orig = {self.normalize(title): title for title in title_to_id.keys()}
+        norm_to_orig = {}
+        for title in title_to_id.keys():
+            norm = self.normalize(title)
+            # If two games normalize to the same name (e.g. Base Game vs [Subset]), 
+            # keep the shorter one, which is almost always the Base Game.
+            if norm not in norm_to_orig or len(title) < len(norm_to_orig[norm]):
+                norm_to_orig[norm] = title
+                
         known_norms = list(norm_to_orig.keys())
 
         suggested_ids = []
