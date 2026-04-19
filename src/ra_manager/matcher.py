@@ -18,10 +18,10 @@ class HashMatcher:
 
         # 1. Remove brackets, parentheses, AND tildes (e.g., (Europe), [!], ~Hack~)
         n = re.sub(r"\(.*?\)|\[.*?\]|~.*?~", "", n)
-        
+
         # 2. Remove "The" and "Version" as standalone words to prevent difflib hijacking
         n = re.sub(r"\b(the|version)\b", "", n, flags=re.IGNORECASE)
-        
+
         # 3. Strip all non-alphanumeric chars EXCEPT spaces
         n = n.lower().strip()
         n = re.sub(r"[^a-z0-9\s]", "", n)
@@ -74,11 +74,11 @@ class HashMatcher:
         norm_to_orig = {}
         for title in title_to_id.keys():
             norm = self.normalize(title)
-            # If two games normalize to the same name (e.g. Base Game vs [Subset]), 
+            # If two games normalize to the same name (e.g. Base Game vs [Subset]),
             # keep the shorter one, which is almost always the Base Game.
             if norm not in norm_to_orig or len(title) < len(norm_to_orig[norm]):
                 norm_to_orig[norm] = title
-                
+
         known_norms = list(norm_to_orig.keys())
 
         suggested_ids = []
@@ -86,7 +86,7 @@ class HashMatcher:
 
         for filename in df["filename"]:
             clean_name = filename.rsplit(".", 1)[0]
-            
+
             # Use self.normalize here too!
             norm_query = self.normalize(clean_name)
 
