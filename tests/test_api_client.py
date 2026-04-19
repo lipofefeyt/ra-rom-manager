@@ -120,14 +120,17 @@ class TestGetUserSummary:
             client.get_user_summary()
         mock_get.assert_called_once()
 
+
 class TestGetGameHashes:
     def test_returns_expected_format(self, client):
-        api_data =[{
-            "MD5": "1bc674be034e43c96b86487ac69d9293",
-            "Name": "Sonic The Hedgehog.md",
-            "Labels": ["nointro"],
-            "PatchUrl": None
-        }]
+        api_data = [
+            {
+                "MD5": "1bc674be034e43c96b86487ac69d9293",
+                "Name": "Sonic The Hedgehog.md",
+                "Labels": ["nointro"],
+                "PatchUrl": None,
+            }
+        ]
         with patch("requests.get", return_value=_mock_response(api_data)):
             result = client.get_game_hashes(1)
             assert isinstance(result, list)
