@@ -82,5 +82,23 @@
     "body": "## Objective\nAllow the user to maintain a 'want to play' list that is tracked alongside the ROM library and surfaced in the Excel output.\n\n## Problem\nThere is no way to flag games of interest that aren't yet in the local collection. This was listed as a desired feature from the start.\n\n## Design\n- `data/want_to_play.csv` as the source of truth (manually edited)\n- Columns: `ra_game_id`, `title`, `console`, `notes`, `added_date`\n- Exporter reads this file and merges with RA game data to populate achievement counts\n- Games in want-to-play that are also in the local collection are flagged as 'owned'\n\n## Acceptance Criteria\n- `data/want_to_play.csv` is read if present; gracefully skipped if absent\n- Want to Play sheet shows achievement total for each game (fetched from RA)\n- Games present in both the local collection and the want-to-play list are marked 'owned'\n- `want_to_play.csv` template with correct headers is committed to the repo\n\n## Implements\nRA-OUT-002",
     "labels": ["type: feature", "layer: output", "priority: later"],
     "milestone": "M4 - Excel Output & Stats"
+  },
+  {
+    "title": "[API] Add get_game_hashes() to RAClient",
+    "body": "## Objective\nExpand `RAClient` to fetch accepted ROM hashes for a specific game to suggest correct dumps.\n\n## Design\n- Add `get_game_hashes(game_id: int) -> list[dict]` using `API_GetGameHashes.php`\n- Cache result with a 24-hour TTL\n\n## Implements\nRA-DEV-026",
+    "labels": ["type: feature", "layer: api", "priority: now"],
+    "milestone": "M5 - ROM Sourcing Hints"
+  },
+  {
+    "title": "[MATCH] Add fuzzy matching to suggest correct dumps",
+    "body": "## Objective\nSuggest the closest RA-accepted dump by fuzzy title match for unmatched ROMs.\n\n## Design\n- Create `suggest_matches(unmatched_df, ra_game_list)` in `matcher.py`\n- Use `difflib.get_close_matches` to map original filename to expected RA Title\n\n## Implements\nRA-DEV-013, RA-DEV-014",
+    "labels":["type: feature", "layer: match", "priority: now"],
+    "milestone": "M5 - ROM Sourcing Hints"
+  },
+  {
+    "title": "[OUTPUT] Add Unmatched ROMs sheet",
+    "body": "## Objective\nCreate an Excel sheet listing all unmatched ROMs alongside their suggested correct dump filename, MD5, and patch URL.\n\n## Design\n- Add `_write_unmatched_sheet()` to `exporter.py`\n- Make patch URLs clickable hyperlinks\n\n## Implements\nRA-DEV-054",
+    "labels":["type: feature", "layer: output", "priority: now"],
+    "milestone": "M5 - ROM Sourcing Hints"
   }
 ]
