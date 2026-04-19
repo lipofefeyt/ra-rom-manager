@@ -221,7 +221,7 @@ def _write_unmatched_sheet(wb: Workbook, df: pd.DataFrame) -> None:
     ws.freeze_panes = "A2"
 
     # Filter only unmatched ROMs
-    unmatched_df = df[df["matched"] == False]
+    unmatched_df = df[not df["matched"]]
 
     if unmatched_df.empty:
         ws.cell(row=2, column=1, value="All ROMs matched perfectly!").font = Font(
