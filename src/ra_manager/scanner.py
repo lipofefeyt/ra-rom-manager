@@ -18,8 +18,11 @@ SKIP_EXTENSIONS = {".cue", ".m3u"}  # .cue files are text descriptors — hash t
 
 
 class ROMScanner:
-    def __init__(self, rom_dir=None):
+    def __init__(self, rom_dir=None, exclude_dirs=None): # <-- Add exclude_dirs
         self.rom_dir = Path(rom_dir) if rom_dir else get_rom_path()
+
+        # Convert to lowercase for case-insensitive matching
+        self.exclude_dirs = [d.lower() for d in (exclude_dirs or [])]
 
     def _hash_file(self, file_path: Path) -> str:
         """Hashes a file in 64 KB chunks. Returns lowercase hex MD5."""
@@ -66,9 +69,17 @@ class ROMScanner:
             skip_reason — reason for skipping, empty string otherwise
         """
         print(f"📂 Scanning: {self.rom_dir}")
-        rom_data = []
+
+        # Exclude directories
+        if self.exclude_dirs:
+            print(f"   ⏭️  Excluding folders: {', '.join(self.exclude_dirs)}")
 
         for root, _dirs, files in os.walk(self.rom_dir):
+
+            # Do not enter excluded directories
+            if Path(root) == self.rom_dir and self.exclude_dirs:
+                dirs[:] =[d for d in dirs if d.lower() not in self.exclude_dirs]
+
             # Build a set of .bin files that have a paired .cue in this folder
             # so we don't double-hash them when they also appear as standalone .bin
             cue_files = {f for f in files if Path(f).suffix.lower() == ".cue"}
