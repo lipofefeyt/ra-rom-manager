@@ -1,5 +1,6 @@
 import os
 import time
+
 import requests
 from dotenv import load_dotenv
 
@@ -27,7 +28,7 @@ class RAClient:
         """
         params = {"u": self.user, "y": self.api_key, **params}
         max_retries = 4
-        
+
         for attempt in range(max_retries):
             try:
                 response = requests.get(
@@ -35,24 +36,24 @@ class RAClient:
                     params=params,
                     timeout=10,
                 )
-                
+
                 # If we hit the rate limit, sleep and retry
                 if response.status_code == 429:
                     wait_time = 2 ** attempt  # Waits 1s, 2s, 4s, 8s...
                     print(f"   ⏳ API rate limit reached. Waiting {wait_time}s to retry...")
                     time.sleep(wait_time)
                     continue
-                
+
                 response.raise_for_status()
                 return response.json()
-                
+
             except requests.exceptions.Timeout as e:
                 raise RAClientError(f"Request timed out: {endpoint}") from e
             except requests.exceptions.HTTPError as e:
                 raise RAClientError(f"HTTP error {response.status_code}: {endpoint}") from e
             except requests.exceptions.RequestException as e:
                 raise RAClientError(f"Request failed: {e}") from e
-                
+
         raise RAClientError(f"Failed after {max_retries} retries due to rate limiting (HTTP 429).")
 
     def get_console_game_hashes(self, console_id: int, force_refresh: bool = False) -> list:

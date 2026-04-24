@@ -8,21 +8,23 @@ import pandas as pd
 from .config import get_rom_path
 
 # Extensions hashed directly
-DIRECT_EXTENSIONS = {".gba", ".gb", ".gbc", ".sfc", ".smc", ".nes", ".iso", ".bin", ".chd", ".rvz", ".z64", ".n64", ".v64"}
+DIRECT_EXTENSIONS = {
+    ".gba", ".gb", ".gbc", ".sfc", ".smc", ".nes",
+    ".iso", ".bin", ".chd", ".rvz", ".z64", ".n64", ".v64"
+}
 
 # Extensions that are zip archives containing a ROM
 ZIP_EXTENSIONS = {".zip"}
 
 # Extensions that are skipped entirely (with a logged reason)
-SKIP_EXTENSIONS = {".cue", ".m3u"}  # .cue files are text descriptors — hash the paired .bin instead
+SKIP_EXTENSIONS = {".cue"}  # .cue files are text descriptors
 
 
 class ROMScanner:
-    def __init__(self, rom_dir=None, exclude_dirs=None): # <-- Add exclude_dirs
+    def __init__(self, rom_dir=None, exclude_dirs=None):
         self.rom_dir = Path(rom_dir) if rom_dir else get_rom_path()
-
-        # Convert to lowercase for case-insensitive matching
-        self.exclude_dirs = [d.lower() for d in (exclude_dirs or [])]
+        # Clean the input to lowercase for safer matching
+        self.exclude_dirs = [d.lower().strip() for d in (exclude_dirs or [])]
 
     def _hash_file(self, file_path: Path) -> str:
         """Hashes a file in 64 KB chunks. Returns lowercase hex MD5."""
@@ -58,30 +60,20 @@ class ROMScanner:
     def scan(self) -> pd.DataFrame:
         """
         Walks the ROM directory and returns a DataFrame of all found ROMs.
-
-        Columns:
-            filename    — original file name on disk
-            extension   — file extension
-            path        — full path
-            md5         — MD5 hash of the ROM content
-            console     — inferred from parent folder name
-            skipped     — True if the file was not hashed
-            skip_reason — reason for skipping, empty string otherwise
         """
         print(f"📂 Scanning: {self.rom_dir}")
-
-        # Exclude directories
         if self.exclude_dirs:
             print(f"   ⏭️  Excluding folders: {', '.join(self.exclude_dirs)}")
 
-        for root, _dirs, files in os.walk(self.rom_dir):
+        rom_data = []
 
+        for root, dirs, files in os.walk(self.rom_dir):
             # Do not enter excluded directories
-            if Path(root) == self.rom_dir and self.exclude_dirs:
-                dirs[:] =[d for d in dirs if d.lower() not in self.exclude_dirs]
+            if self.exclude_dirs:
+                # Pruning 'dirs' in-place tells os.walk to skip these folders
+                dirs[:] = [d for d in dirs if d.lower() not in self.exclude_dirs]
 
             # Build a set of .bin files that have a paired .cue in this folder
-            # so we don't double-hash them when they also appear as standalone .bin
             cue_files = {f for f in files if Path(f).suffix.lower() == ".cue"}
             cue_paired_bins = set()
             for cue in cue_files:
@@ -126,8 +118,6 @@ class ROMScanner:
                     rom_data.append(_rom_row(file, suffix, file_path, md5, console))
                     continue
 
-                # Anything else is silently ignored (e.g. .txt, .png, .srm saves)
-
         return pd.DataFrame(rom_data)
 
 
@@ -139,13 +129,11 @@ class ROMScanner:
 def _parse_cue_bin(cue_path: Path) -> str | None:
     """
     Reads a .cue file and extracts the name of the first referenced .bin file.
-    Returns None if none found.
     """
     with open(cue_path, encoding="utf-8", errors="ignore") as f:
         for line in f:
             line = line.strip()
             if line.upper().startswith("FILE"):
-                # FILE "game.bin" BINARY  →  extract the quoted filename
                 parts = line.split('"')
                 if len(parts) >= 2:
                     return parts[1]
