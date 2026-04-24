@@ -18,11 +18,18 @@ def main():
         action="store_true",
         help="Auto-rename perfectly matched ROMs to their official RA titles"
     )
+    parser.add_argument(
+        "--exclude",
+        nargs="+",
+        default=[],
+        help="Subfolder names to skip (e.g. --exclude ps2 psp)"
+    )
     args = parser.parse_args()
 
     print("--- RetroAchievements ROM Manager ---")
 
-    scanner = ROMScanner()
+    # Pass the exclusions to the scanner
+    scanner = ROMScanner(exclude_dirs=args.exclude)
     client = RAClient()
     matcher = HashMatcher()
 
