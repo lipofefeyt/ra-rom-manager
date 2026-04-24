@@ -23,6 +23,14 @@ A personal ROM library manager built around [RetroAchievements](https://retroach
 - Suggests the exact RA-accepted dump filename and patch URL for unmatched ROMs
 - **(New in M5.5)** Safely auto-renames perfectly matched ROMs to official RA titles via the `--rename` flag
 
+- Example#1: Summary Sheet
+
+  <img width="480" height="624" alt="image" src="https://github.com/user-attachments/assets/bcc491fa-0b26-41a9-9f76-87df46d774be" />
+
+- Example#2: Unmatched Roms
+
+  <img width="1861" height="631" alt="image" src="https://github.com/user-attachments/assets/5a02f261-14e0-4fcf-a288-1575334bb33e" />
+
 ---
 
 ## Prerequisites
