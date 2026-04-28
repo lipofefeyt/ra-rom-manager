@@ -19,8 +19,16 @@ def main():
 
     # Bypass the glitch by using list()
     parser.add_argument("--exclude", nargs="+", default=list(), help="Folders to skip")
-    parser.add_argument("--timestamp", action="store_true", help="Add a timestamp to the output file so it doesn't overwrite")
-    parser.add_argument("--csv", action="store_true", help="Output a plain CSV file instead of Excel")
+    parser.add_argument(
+        "--timestamp",
+        action="store_true",
+        help="Add a timestamp to the output file so it doesn't overwrite"
+    )
+    parser.add_argument(
+        "--csv",
+        action="store_true",
+        help="Output a plain CSV file instead of Excel"
+    )
 
     args = parser.parse_args()
 
