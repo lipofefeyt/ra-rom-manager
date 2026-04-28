@@ -253,6 +253,7 @@ def _write_unmatched_sheet(wb: Workbook, df: pd.DataFrame) -> None:
 def export(
     df: pd.DataFrame,
     user_summary: dict | None = None,
+    output_path: Path | str | None = None
 ) -> Path:
     """
     Builds and saves the full Excel workbook to data/ra_collection.xlsx.
@@ -264,7 +265,9 @@ def export(
 
     Returns the path to the saved file.
     """
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    # Use the provided path, or default to the original
+    target_path = Path(output_path) if output_path else OUTPUT_PATH
+    target_path.parent.mkdir(parents=True, exist_ok=True)
 
     wb = Workbook()
     # Remove the default empty sheet
@@ -285,5 +288,5 @@ def export(
     # Write the want to play sheet
     _write_want_to_play_sheet(wb)
 
-    wb.save(OUTPUT_PATH)
-    return OUTPUT_PATH
+    wb.save(target_path)
+    return target_path

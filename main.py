@@ -1,4 +1,6 @@
 import argparse
+from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 
@@ -13,22 +15,17 @@ from src.ra_manager.stats import enrich_with_progress
 
 def main():
     parser = argparse.ArgumentParser(description="RetroAchievements ROM Manager")
-    parser.add_argument(
-        "--rename",
-        action="store_true",
-        help="Auto-rename perfectly matched ROMs to their official RA titles"
-    )
-    parser.add_argument(
-        "--exclude",
-        nargs="+",
-        default=[],
-        help="Subfolder names to skip (e.g. --exclude ps2 psp)"
-    )
+    parser.add_argument("--rename", action="store_true", help="Auto-rename perfectly matched ROMs")
+
+    # Bypass the glitch by using list()
+    parser.add_argument("--exclude", nargs="+", default=list(), help="Folders to skip")
+    parser.add_argument("--timestamp", action="store_true", help="Add a timestamp to the output file so it doesn't overwrite")
+    parser.add_argument("--csv", action="store_true", help="Output a plain CSV file instead of Excel")
+
     args = parser.parse_args()
 
     print("--- RetroAchievements ROM Manager ---")
 
-    # Pass the exclusions to the scanner
     scanner = ROMScanner(exclude_dirs=args.exclude)
     client = RAClient()
     matcher = HashMatcher()
@@ -150,11 +147,22 @@ def main():
     print(f"   In Progress   : {in_progress}")
     print(f"   Unplayed      : {unplayed}")
 
-    # 6. Export to Excel
-    output_path = export(final_df, user_summary)
-    print(f"\n💾 Saved to {output_path}")
+    # 6. Export to Excel or CSV
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S") if args.timestamp else ""
 
-    # If --rename is used
+    if args.csv:
+        filename = f"ra_collection_{timestamp}.csv" if timestamp else "ra_collection.csv"
+        out_path = Path("data") / filename
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        final_df.to_csv(out_path, index=False)
+        print(f"\n💾 Saved plain CSV to {out_path}")
+    else:
+        filename = f"ra_collection_{timestamp}.xlsx" if timestamp else "ra_collection.xlsx"
+        out_path = Path("data") / filename
+        export(final_df, user_summary, output_path=out_path)
+        print(f"\n💾 Saved Excel workbook to {out_path}")
+
+    # 7. Auto-Rename (Opt-in only)
     if args.rename:
         print("\n🏷️  Auto-Renaming Matched ROMs...")
         rename_roms(final_df)
