@@ -5,23 +5,41 @@ from pathlib import Path
 import pandas as pd
 
 from src.ra_manager.api_client import RAClient, RAClientError
+from src.ra_manager.cache import clear_all
 from src.ra_manager.config import CONSOLES, FOLDER_TO_CONSOLE_ID
 from src.ra_manager.exporter import export
+from src.ra_manager.franchise import run_franchise_report
 from src.ra_manager.matcher import HashMatcher
 from src.ra_manager.renamer import rename_roms
 from src.ra_manager.scanner import ROMScanner
 from src.ra_manager.stats import enrich_with_progress
-from src.ra_manager.franchise import run_franchise_report
-from src.ra_manager.cache import clear_all
+
 
 def main():
     parser = argparse.ArgumentParser(description="RetroAchievements ROM Manager")
     parser.add_argument("--rename", action="store_true", help="Auto-rename perfectly matched ROMs")
     parser.add_argument("--exclude", nargs="+", default=list(), help="Folders to skip")
-    parser.add_argument("--timestamp",action="store_true",help="Add a timestamp to the output file so it doesn't overwrite")
-    parser.add_argument("--csv", action="store_true", help="Output a plain CSV file instead of Excel")
-    parser.add_argument("--franchise", type=str, help="Search RA for a franchise (e.g., 'Pokemon') and generate a progress report")
-    parser.add_argument("--refresh", action="store_true", help="Clear the local cache and fetch fresh data")
+
+    parser.add_argument(
+        "--timestamp",
+        action="store_true",
+        help="Add a timestamp to the output file so it doesn't overwrite"
+    )
+    parser.add_argument(
+        "--csv",
+        action="store_true",
+        help="Output a plain CSV file instead of Excel"
+    )
+    parser.add_argument(
+        "--franchise",
+        type=str,
+        help="Search RA for a franchise (e.g., 'Pokemon') and generate a progress report"
+    )
+    parser.add_argument(
+        "--refresh",
+        action="store_true",
+        help="Clear the local cache and fetch fresh data"
+    )
 
     # Parse the arguments
     args = parser.parse_args()
@@ -38,7 +56,7 @@ def main():
 
     # --- FRANCHISE MODE ---
     if args.franchise:
-        print(f"--- RetroAchievements Franchise Planner ---")
+        print("--- RetroAchievements Franchise Planner ---")
         run_franchise_report(args.franchise, client)
         return
 
