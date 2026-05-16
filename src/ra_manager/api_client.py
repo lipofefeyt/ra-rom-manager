@@ -89,7 +89,7 @@ class RAClient:
 
         data = self._get(
             "API_GetGameInfoAndUserProgress.php",
-            {"u": self.user, "g": game_id},
+            {"g": game_id},
         )
 
         achievements = data.get("Achievements", {})

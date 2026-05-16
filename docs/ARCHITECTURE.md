@@ -1,8 +1,8 @@
 # Architecture
 
 > **Author:** lipofefeyt
-> **Last updated:** 2026-04
-> **Status:** Current — reflects M1–M5.5 implementation
+> **Last updated:** 2026-05
+> **Status:** Current — reflects M1–M6 implementation
 
 ---
 
@@ -20,13 +20,13 @@ The architecture follows a strict layered model: each module has one responsibil
 |--------|---------------|--------|
 | `main.py` | Entry point. Orchestrates the pipeline in order. Handles CLI flags. No business logic. | ✅ M1 |
 | `scanner.py` | Walks the ROM directory, computes MD5 hashes, returns a DataFrame. | ✅ M2 |
-| `matcher.py` | Builds a hash → game lookup from RA data. Matches scanner output. Deep normalizes strings to suggest dumps for unmatched ROMs. | ✅ M5 |
+| `matcher.py` | Builds a hash → game lookup from RA data. Matches scanner output. Deep normalizes strings to suggest dumps for unmatched ROMs. `enrich_with_dump_hints()` owns the full suggestion pipeline. | ✅ M5/M6 |
 | `api_client.py` | All communication with the RetroAchievements API. Cache-aware. Raises `RAClientError` on failure. | ✅ M3 / M5 |
 | `cache.py` | TTL-based local JSON cache. Sits between `api_client` and the network. | ✅ M2 |
 | `config.py` | Console ID map, folder name map, ROM path resolution from `.env`. | ✅ M1 |
 | `stats.py` | Enriches the DataFrame with completion labels and achievement progress. | ✅ M3 |
 | `exporter.py` | Takes the final DataFrame and writes the Excel workbook. | ✅ M4 / M5 |
-| `renamer.py` | Safely renames mathematically matched ROMs to their official titles. | ✅ M5.5 |
+| `renamer.py` | Safely renames mathematically matched ROMs to their official titles. Supports `--dry-run` mode to preview changes without touching the filesystem. | ✅ M5.5/M6 |
 
 ---
 

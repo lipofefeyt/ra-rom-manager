@@ -56,4 +56,3 @@ def clear_all() -> None:
     """Wipes the entire cache file."""
     if CACHE_FILE.exists():
         CACHE_FILE.unlink()
-    print("🗑️  Cache cleared.")

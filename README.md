@@ -3,8 +3,8 @@
 [![CI](https://github.com/lipofefeyt/ra-rom-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/lipofefeyt/ra-rom-manager/actions/workflows/ci.yml)
 
 > **Author:** lipofefeyt
-> **Version:** 1.2.0
-> **Status:** Active — M1–M5.5 complete
+> **Version:** 1.6.0
+> **Status:** Active — M1–M6 complete
 
 A personal ROM library manager built around [RetroAchievements](https://retroachievements.org). Scans your local ROM collection, verifies files against RA-accepted hashes, tracks achievement progress per game, exports everything to a structured Excel workbook, and safely auto-renames your valid files.
 
@@ -21,7 +21,8 @@ A personal ROM library manager built around [RetroAchievements](https://retroach
 - Exports to `data/ra_collection.xlsx` with per-console sheets, a Summary sheet, and a Want to Play sheet
 - Conditional formatting: 🟢 mastered, 🟡 in progress, 🔴 unmatched
 - Suggests the exact RA-accepted dump filename and patch URL for unmatched ROMs
-- **(New in M5.5)** Safely auto-renames perfectly matched ROMs to official RA titles via the `--rename` flag
+- Safely auto-renames perfectly matched ROMs to official RA titles via the `--rename` flag
+- Preview any rename operation without touching the filesystem with `--rename --dry-run`
 
 - Example#1: Summary Sheet
 
@@ -60,6 +61,9 @@ python main.py
 
 # 5. Run (With Auto-Renamer)
 python main.py --rename
+
+# 6. Preview renames without touching the filesystem
+python main.py --rename --dry-run
 ```
 
 Output is written to `data/ra_collection.xlsx`.
@@ -158,6 +162,7 @@ ra-rom-manager/
 | M4 — Excel Output & Stats | ✅ Complete | Full Excel export with formatting |
 | M5 — ROM Sourcing Hints | ✅ Complete | Suggest correct dump for unmatched ROMs |
 | M5.5 — File Management | ✅ Complete | Safe, strict hash-based auto-renaming tool |
+| M6 — Code Quality & Safety | ✅ Complete | `--dry-run` flag, refactored main.py, 102 tests |
 
 ---
 
