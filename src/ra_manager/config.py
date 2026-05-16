@@ -31,14 +31,14 @@ CONSOLES = {
 # Scanner uses this to infer console from subfolder name
 FOLDER_TO_CONSOLE_ID = {
     "n64": 2,  # Nintendo 64
-    "snes": 3,  # Nintendo SNES1
+    "snes": 3,  # Super Nintendo
     "gb": 4,  # Nintendo Game Boy
     "gba": 5,  # Nintendo Game Boy Advance
     "gbc": 6,  # Nintendo Game Boy Color
     "nes": 7,  # Nintendo NES
-    "psx": 12,  # Sony Playstation 1
-    "ps1": 12,  # Sony Playstation 1
-    "ps2": 21,  # Sony Playstation 2
+    "psx": 12,  # Sony PlayStation
+    "ps1": 12,  # Sony PlayStation
+    "ps2": 21,  # Sony PlayStation 2
     "pce": 13,  # NEC PC Engine
     "gg": 15,  # SEGA Game Gear
     "gamecube": 16,  # Nintendo Game Cube

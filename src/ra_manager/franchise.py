@@ -7,7 +7,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font
 
 from .config import CONSOLES
-from .exporter import COLOUR_ALT_ROW, _body_font, _row_fill, _set_column_widths, _write_header_row
+from .exporter import COLOUR_ALT_ROW, body_font, row_fill, set_column_widths, write_header_row
 
 
 def remove_accents(text: str) -> str:
@@ -39,7 +39,8 @@ def run_franchise_report(keyword: str, client) -> None:
                             "ra_title": title,
                             "console": console_name
                         })
-        except Exception:
+        except Exception as e:
+            print(f"   ⚠️  Skipping {console_name}: {e}")
             continue
 
     if not matched_games:
@@ -136,8 +137,8 @@ def _export_franchise_excel(keyword: str, df: pd.DataFrame):
                 ("Earned", "earned", 10), ("Total", "total", 10),
                 ("%", "completion_pct", 10), ("Mastered", "is_mastered", 12)]
 
-        _write_header_row(ws, [c[0] for c in cols])
-        _set_column_widths(ws, cols)
+        write_header_row(ws, [c[0] for c in cols])
+        set_column_widths(ws, cols)
 
         for row_idx, (_, row) in enumerate(data_df.iterrows(), start=2):
             alt_colour = COLOUR_ALT_ROW if row_idx % 2 == 0 else None
@@ -149,10 +150,10 @@ def _export_franchise_excel(keyword: str, df: pd.DataFrame):
                     val = "Yes" if val else "No"
 
                 cell = ws.cell(row=row_idx, column=col_idx, value=val)
-                cell.font = _body_font()
+                cell.font = body_font()
 
                 if alt_colour:
-                    cell.fill = _row_fill(alt_colour)
+                    cell.fill = row_fill(alt_colour)
 
     write_data_sheet("Played", played_df)
     write_data_sheet("To Play", toplay_df)

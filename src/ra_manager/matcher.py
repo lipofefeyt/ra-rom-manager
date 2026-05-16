@@ -63,6 +63,58 @@ class HashMatcher:
 
         return df
 
+    def enrich_with_dump_hints(
+        self,
+        matched_df: pd.DataFrame,
+        ra_game_list: list,
+        client,
+    ) -> pd.DataFrame:
+        """
+        For every unmatched ROM, fuzzy-matches it to an RA game and fetches the
+        accepted dump filename, MD5, and patch URL from the API.
+        Returns matched_df with suggestion columns merged in.
+        """
+        unmatched_df = matched_df[~matched_df["matched"]].copy()
+        if unmatched_df.empty:
+            return matched_df
+
+        print(f"🔍 Found {len(unmatched_df)} unmatched ROMs. Attempting to find correct dumps...")
+        suggestions_df = self.suggest_matches(unmatched_df, ra_game_list)
+
+        for col in ["suggested_filename", "suggested_md5", "patch_url"]:
+            if col not in suggestions_df.columns:
+                suggestions_df[col] = pd.NA
+
+        for idx, row in suggestions_df.iterrows():
+            if pd.notna(row.get("suggested_game_id")):
+                print(f"   💡 Best guess for '{row['filename']}': {row['suggested_title']}")
+
+                raw_hashes = client.get_game_hashes(int(row["suggested_game_id"]))
+                if isinstance(raw_hashes, dict):
+                    hash_list = raw_hashes.get("Results", [])
+                else:
+                    hash_list = raw_hashes
+
+                if hash_list:
+                    best = hash_list[0]
+                    suggestions_df.at[idx, "suggested_filename"] = best.get("Name")
+                    suggestions_df.at[idx, "suggested_md5"] = best.get("MD5")
+                    suggestions_df.at[idx, "patch_url"] = best.get("PatchUrl")
+                else:
+                    print(
+                        f"   ⚠️  Could not find any accepted file names for"
+                        f" {row['suggested_title']}"
+                    )
+            else:
+                print(f"   ❓ Could not find a fuzzy match for: {row['filename']}")
+
+        result = matched_df.copy()
+        for col in ["suggested_title", "suggested_filename", "suggested_md5", "patch_url"]:
+            if col not in result.columns:
+                result[col] = pd.NA
+            result.update(suggestions_df[[col]])
+        return result
+
     def suggest_matches(self, unmatched_df: pd.DataFrame, ra_game_list: list) -> pd.DataFrame:
         df = unmatched_df.copy()
 

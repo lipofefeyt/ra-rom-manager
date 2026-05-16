@@ -18,6 +18,11 @@ from src.ra_manager.stats import enrich_with_progress
 def main():
     parser = argparse.ArgumentParser(description="RetroAchievements ROM Manager")
     parser.add_argument("--rename", action="store_true", help="Auto-rename perfectly matched ROMs")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview --rename changes without touching the filesystem",
+    )
     parser.add_argument("--exclude", nargs="+", default=list(), help="Folders to skip")
 
     parser.add_argument(
@@ -53,6 +58,7 @@ def main():
     if args.refresh:
         print("♻️  Clearing local cache...")
         clear_all()
+        print("🗑️  Cache cleared.")
 
     # --- FRANCHISE MODE ---
     if args.franchise:
@@ -100,50 +106,7 @@ def main():
         console_df = df[df["console"].str.lower() == folder_name].copy()
         matched_df = matcher.match(console_df, hash_map)
 
-        # Grab unmatched rows directly from matched_df so they share the same structure
-        unmatched_df = matched_df[~matched_df["matched"]].copy()
-
-        if not unmatched_df.empty:
-            print(
-                f"🔍 Found {len(unmatched_df)} unmatched ROMs. Attempting to find correct dumps..."
-            )
-            suggestions_df = matcher.suggest_matches(unmatched_df, ra_game_list)
-
-            for col in ["suggested_filename", "suggested_md5", "patch_url"]:
-                if col not in suggestions_df.columns:
-                    suggestions_df[col] = pd.NA
-
-            for idx, row in suggestions_df.iterrows():
-                if pd.notna(row.get("suggested_game_id")):
-                    print(f"   💡 Best guess for '{row['filename']}': {row['suggested_title']}")
-
-                    # Fetch the raw response from the API
-                    raw_hashes = client.get_game_hashes(int(row["suggested_game_id"]))
-
-                    # Safely extract the list whether the API returned a Dict or a List
-                    if isinstance(raw_hashes, dict):
-                        hash_list = raw_hashes.get("Results", [])
-                    else:
-                        hash_list = raw_hashes
-
-                    # If we successfully found valid hashes, pick the first one
-                    if hash_list and len(hash_list) > 0:
-                        best_hash = hash_list[0]
-                        suggestions_df.at[idx, "suggested_filename"] = best_hash.get("Name")
-                        suggestions_df.at[idx, "suggested_md5"] = best_hash.get("MD5")
-                        suggestions_df.at[idx, "patch_url"] = best_hash.get("PatchUrl")
-                    else:
-                        print(
-                            f"   ⚠️  Could not find any accepted file names for "
-                            f"{row['suggested_title']}"
-                        )
-                else:
-                    print(f"   ❓ Could not find a fuzzy match for: {row['filename']}")
-
-            for col in ["suggested_title", "suggested_filename", "suggested_md5", "patch_url"]:
-                if col not in matched_df.columns:
-                    matched_df[col] = pd.NA
-                matched_df.update(suggestions_df[[col]])
+        matched_df = matcher.enrich_with_dump_hints(matched_df, ra_game_list, client)
 
         # Now all_matched will actually contain the suggestions for the Excel export
         all_matched.append(matched_df)
@@ -197,9 +160,10 @@ def main():
         print(f"\n💾 Saved Excel workbook to {out_path}")
 
     # 7. Auto-Rename (Opt-in only)
-    if args.rename:
-        print("\n🏷️  Auto-Renaming Matched ROMs...")
-        rename_roms(final_df)
+    if args.rename or args.dry_run:
+        label = "Previewing rename (dry-run)" if args.dry_run else "Auto-Renaming Matched ROMs"
+        print(f"\n🏷️  {label}...")
+        rename_roms(final_df, dry_run=args.dry_run)
 
 if __name__ == "__main__":
     main()

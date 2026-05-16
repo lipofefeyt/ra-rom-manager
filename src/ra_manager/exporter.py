@@ -39,11 +39,11 @@ UNMATCHED_COLUMNS = [
 ]
 
 
-def _header_font(bold: bool = True) -> Font:
+def header_font(bold: bool = True) -> Font:
     return Font(name="Arial", bold=bold, color=COLOUR_HEADER_FG, size=11)
 
 
-def _body_font(bold: bool = False) -> Font:
+def body_font(bold: bool = False) -> Font:
     return Font(name="Arial", bold=bold, size=10)
 
 
@@ -51,20 +51,20 @@ def _header_fill() -> PatternFill:
     return PatternFill("solid", start_color=COLOUR_HEADER_BG)
 
 
-def _row_fill(colour: str) -> PatternFill:
+def row_fill(colour: str) -> PatternFill:
     return PatternFill("solid", start_color=colour)
 
 
-def _write_header_row(ws, headers: list[str]) -> None:
+def write_header_row(ws, headers: list[str]) -> None:
     for col_idx, label in enumerate(headers, start=1):
         cell = ws.cell(row=1, column=col_idx, value=label)
-        cell.font = _header_font()
+        cell.font = header_font()
         cell.fill = _header_fill()
         cell.alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[1].height = 20
 
 
-def _set_column_widths(ws, columns: list[tuple]) -> None:
+def set_column_widths(ws, columns: list[tuple]) -> None:
     for col_idx, (_, _, width) in enumerate(columns, start=1):
         ws.column_dimensions[get_column_letter(col_idx)].width = width
 
@@ -83,8 +83,8 @@ def _write_console_sheet(wb: Workbook, console_name: str, df: pd.DataFrame) -> N
     ws = wb.create_sheet(title=console_name[:31])  # Excel sheet name limit
 
     headers = [col[0] for col in CONSOLE_COLUMNS]
-    _write_header_row(ws, headers)
-    _set_column_widths(ws, CONSOLE_COLUMNS)
+    write_header_row(ws, headers)
+    set_column_widths(ws, CONSOLE_COLUMNS)
     ws.freeze_panes = "A2"
 
     for row_idx, (_, row) in enumerate(df.iterrows(), start=2):
@@ -100,13 +100,13 @@ def _write_console_sheet(wb: Workbook, console_name: str, df: pd.DataFrame) -> N
                 value = "Yes" if value else "No"
 
             cell = ws.cell(row=row_idx, column=col_idx, value=value)
-            cell.font = _body_font()
+            cell.font = body_font()
             cell.alignment = Alignment(vertical="center")
 
             if fill_colour:
-                cell.fill = _row_fill(fill_colour)
+                cell.fill = row_fill(fill_colour)
             elif alt_colour:
-                cell.fill = _row_fill(alt_colour)
+                cell.fill = row_fill(alt_colour)
 
     ws.auto_filter.ref = f"A1:{get_column_letter(len(CONSOLE_COLUMNS))}1"
 
@@ -123,7 +123,7 @@ def _write_summary_sheet(
     title_font = Font(name="Arial", bold=True, size=14, color=COLOUR_HEADER_BG)
     label_font = Font(name="Arial", bold=True, size=11)
     value_font = Font(name="Arial", size=11)
-    section_fill = _row_fill("DCE6F1")
+    section_fill = row_fill("DCE6F1")
 
     def write_section_header(row: int, label: str) -> None:
         cell = ws.cell(row=row, column=1, value=label)
@@ -133,7 +133,7 @@ def _write_summary_sheet(
 
     def write_row(row: int, label: str, value) -> None:
         lc = ws.cell(row=row, column=1, value=label)
-        lc.font = _body_font(bold=True)
+        lc.font = body_font(bold=True)
         vc = ws.cell(row=row, column=2, value=value)
         vc.font = value_font
 
@@ -174,8 +174,8 @@ def _write_summary_sheet(
 
     # Per-console breakdown
     write_section_header(20, "📋 By Console")
-    ws.cell(row=21, column=1, value="Console").font = _body_font(bold=True)
-    ws.cell(row=21, column=2, value="ROMs").font = _body_font(bold=True)
+    ws.cell(row=21, column=1, value="Console").font = body_font(bold=True)
+    ws.cell(row=21, column=2, value="ROMs").font = body_font(bold=True)
 
     consoles = df["console"].str.upper().value_counts() if "console" in df.columns else {}
     for offset, (console, count) in enumerate(consoles.items()):
@@ -189,7 +189,7 @@ def _write_want_to_play_sheet(wb: Workbook) -> None:
     headers = ["RA Game ID", "Title", "Console", "Notes", "Added Date", "Owned"]
     col_widths = [12, 35, 16, 30, 14, 8]
 
-    _write_header_row(ws, headers)
+    write_header_row(ws, headers)
     for col_idx, width in enumerate(col_widths, start=1):
         ws.column_dimensions[get_column_letter(col_idx)].width = width
     ws.freeze_panes = "A2"
@@ -205,7 +205,7 @@ def _write_want_to_play_sheet(wb: Workbook) -> None:
                 if pd.isna(value):
                     value = ""
                 cell = ws.cell(row=row_idx, column=col_idx, value=value)
-                cell.font = _body_font()
+                cell.font = body_font()
     else:
         ws.cell(row=2, column=1, value="No want_to_play.csv found in data/").font = Font(
             name="Arial", italic=True, color="999999"
@@ -216,8 +216,8 @@ def _write_unmatched_sheet(wb: Workbook, df: pd.DataFrame) -> None:
     ws = wb.create_sheet(title="Unmatched ROMs")
 
     headers = [col[0] for col in UNMATCHED_COLUMNS]
-    _write_header_row(ws, headers)
-    _set_column_widths(ws, UNMATCHED_COLUMNS)
+    write_header_row(ws, headers)
+    set_column_widths(ws, UNMATCHED_COLUMNS)
     ws.freeze_panes = "A2"
 
     # Filter only unmatched ROMs
@@ -238,7 +238,7 @@ def _write_unmatched_sheet(wb: Workbook, df: pd.DataFrame) -> None:
                 value = ""
 
             cell = ws.cell(row=row_idx, column=col_idx, value=value)
-            cell.font = _body_font()
+            cell.font = body_font()
             cell.alignment = Alignment(vertical="center")
 
             # Make Patch URL a clickable hyperlink if it exists
@@ -247,7 +247,7 @@ def _write_unmatched_sheet(wb: Workbook, df: pd.DataFrame) -> None:
                 cell.font = Font(name="Arial", size=10, color="0563C1", underline="single")
 
             if alt_colour:
-                cell.fill = _row_fill(alt_colour)
+                cell.fill = row_fill(alt_colour)
 
 
 def export(

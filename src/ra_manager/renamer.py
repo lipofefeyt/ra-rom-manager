@@ -17,10 +17,14 @@ def sanitize_filename(name: str) -> str:
     return " ".join(clean.split())
 
 
-def rename_roms(df: pd.DataFrame) -> None:
+def rename_roms(df: pd.DataFrame, dry_run: bool = False) -> None:
     """
     Safely renames perfectly matched ROMs to their official RA titles.
+    Pass dry_run=True to preview changes without touching the filesystem.
     """
+    if dry_run:
+        print("   🔍 Dry-run mode — no files will be changed.")
+
     # LAYER 1 SAFETY: Only process perfectly matched ROMs
     matched_df = df[df["matched"]]
 
@@ -29,6 +33,7 @@ def rename_roms(df: pd.DataFrame) -> None:
         return
 
     renamed_count = 0
+    skipped_count = 0
     for _, row in matched_df.iterrows():
         old_path = Path(row["path"])
 
@@ -52,9 +57,14 @@ def rename_roms(df: pd.DataFrame) -> None:
         # LAYER 3 SAFETY: Don't overwrite an existing file
         if new_path.exists():
             print(f"   ⚠️  Skipping: '{new_name}' already exists in that folder.")
+            skipped_count += 1
+        elif dry_run:
+            print(f"   🔍 Would rename: '{old_path.name}'  ->  '{new_name}'")
+            renamed_count += 1
         else:
             old_path.rename(new_path)
             print(f"   ✅ Renamed: '{old_path.name}'  ->  '{new_name}'")
             renamed_count += 1
 
-    print(f"\n   📝 Successfully renamed {renamed_count} files.")
+    action = "Would rename" if dry_run else "Successfully renamed"
+    print(f"\n   📝 {action} {renamed_count} file(s). Skipped {skipped_count} collision(s).")
