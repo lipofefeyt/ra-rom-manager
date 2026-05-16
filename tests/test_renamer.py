@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pandas as pd
-import pytest
 
 from src.ra_manager.renamer import rename_roms, sanitize_filename
 
