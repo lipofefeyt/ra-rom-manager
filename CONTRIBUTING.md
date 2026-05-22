@@ -39,9 +39,23 @@ This project uses [Ruff](https://docs.astral.sh/ruff/) for linting and formattin
 ## Environment Setup
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -e '.[dev]'
 cp .env.example .env
 # Fill in RA_USERNAME, RA_API_KEY, ROM_PATH
 ```
 
 Or open the repo in GitHub Codespaces — the dev container handles everything automatically.
+
+## Running Tests
+
+With the venv activated (`(.venv)` visible in your prompt):
+
+```bash
+pytest                          # full suite
+pytest tests/test_html_exporter.py -v   # single file, verbose
+ruff check src tests            # linting
+```
+
+Always run via `pytest`, not `python3 tests/...` — the latter won't resolve the `src.ra_manager` package path.
