@@ -72,10 +72,10 @@ The matcher shall add `ra_title`, `ra_game_id`, and `matched` columns to the sca
 **RA-DEV-012** `[MATCH]` `IMPLEMENTED`
 The matcher shall not mutate the input DataFrame — it shall always operate on a copy.
 
-**RA-DEV-013** `[MATCH]` `BASELINED`
+**RA-DEV-013** `[MATCH]` `IMPLEMENTED`
 For unmatched ROMs, the matcher shall suggest the closest RA-accepted dump by fuzzy title match, adding `suggested_title`, `suggested_md5`, `suggested_filename`, and `patch_url` columns. Assigned to M5.
 
-**RA-DEV-014** `[MATCH]` `BASELINED`
+**RA-DEV-014** `[MATCH]` `IMPLEMENTED`
 The suggested filename shall be sourced from the `API_GetGameHashes` endpoint `Name` field, which contains the exact No-Intro filename RA expects. Assigned to M5.
 
 ---
@@ -100,7 +100,7 @@ The API client shall expose `get_user_progress(game_id)` returning `{earned, tot
 **RA-DEV-025** `[API]` `IMPLEMENTED`
 The API client shall expose `get_user_summary()` returning `{points, softcore_points, rank, games_played}` for the configured user.
 
-**RA-DEV-026** `[API]` `BASELINED`
+**RA-DEV-026** `[API]` `IMPLEMENTED`
 The API client shall expose `get_game_hashes(game_id)` returning `[{MD5, Name, Labels, PatchUrl}]` for a given game, sourced from `API_GetGameHashes`. Assigned to M5.
 
 ---
@@ -154,10 +154,10 @@ The workbook shall contain one sheet per detected console, with conditional row 
 **RA-DEV-053** `[OUT]` `IMPLEMENTED`
 The workbook shall contain a Want to Play sheet (always last), populated from `data/want_to_play.csv` if present.
 
-**RA-DEV-054** `[OUT]` `BASELINED`
+**RA-DEV-054** `[OUT]` `IMPLEMENTED`
 The workbook shall contain an Unmatched ROMs sheet listing all unmatched ROMs alongside their suggested correct dump filename, MD5, and patch URL where available. Assigned to M5.
 
-**RA-DEV-055** `[OUT]` `DEFERRED`
+**RA-DEV-055** `[OUT]` `IMPLEMENTED`
 The exporter shall support an optional HTML report output in addition to the Excel workbook.
 
 ---
@@ -201,15 +201,15 @@ The codebase shall maintain zero Ruff violations on every CI run.
 | RA-DEV-010 | MATCH | IMPLEMENTED | M1 | test_matcher.py |
 | RA-DEV-011 | MATCH | IMPLEMENTED | M1 | test_matcher.py |
 | RA-DEV-012 | MATCH | IMPLEMENTED | M1 | TestMatch::test_original_df_not_mutated |
-| RA-DEV-013 | MATCH | BASELINED | M5 | — |
-| RA-DEV-014 | MATCH | BASELINED | M5 | — |
+| RA-DEV-013 | MATCH | IMPLEMENTED | M5 | TestEnrichWithDumpHints::test_adds_suggestion_columns_for_unmatched_roms |
+| RA-DEV-014 | MATCH | IMPLEMENTED | M5 | TestEnrichWithDumpHints::test_adds_suggestion_columns_for_unmatched_roms |
 | RA-DEV-020 | API | IMPLEMENTED | M1 | test_api_client.py |
 | RA-DEV-021 | API | IMPLEMENTED | M2 | TestGetConsoleGameHashes::test_raises_on_timeout |
 | RA-DEV-022 | API | IMPLEMENTED | M2 | TestGetConsoleGameHashes::test_raises_on_http_error |
 | RA-DEV-023 | API | IMPLEMENTED | M2 | test_api_client.py |
 | RA-DEV-024 | API | IMPLEMENTED | M3 | TestGetUserProgress |
 | RA-DEV-025 | API | IMPLEMENTED | M3 | TestGetUserSummary |
-| RA-DEV-026 | API | BASELINED | M5 | — |
+| RA-DEV-026 | API | IMPLEMENTED | M5 | TestGetGameHashes |
 | RA-DEV-030 | CACHE | IMPLEMENTED | M2 | test_cache.py |
 | RA-DEV-031 | CACHE | IMPLEMENTED | M2 | TestTTL |
 | RA-DEV-032 | CACHE | IMPLEMENTED | M2 | TestGetConsoleGameHashes::test_force_refresh_bypasses_cache |
@@ -223,8 +223,8 @@ The codebase shall maintain zero Ruff violations on every CI run.
 | RA-DEV-051 | OUT | IMPLEMENTED | M4 | TestSummarySheet |
 | RA-DEV-052 | OUT | IMPLEMENTED | M4 | TestConsoleSheet |
 | RA-DEV-053 | OUT | IMPLEMENTED | M4 | TestSheetStructure::test_want_to_play_sheet_exists |
-| RA-DEV-054 | OUT | BASELINED | M5 | — |
-| RA-DEV-055 | OUT | DEFERRED | — | — |
+| RA-DEV-054 | OUT | IMPLEMENTED | M5 | TestUnmatchedSheet |
+| RA-DEV-055 | OUT | IMPLEMENTED | M6 | test_html_exporter.py |
 | RA-DEV-060 | SYS | IMPLEMENTED | M1 | CI pipeline |
 | RA-DEV-061 | SYS | IMPLEMENTED | M1 | CI pipeline (Python 3.12) |
 | RA-DEV-062 | SYS | IMPLEMENTED | M4 | local run on Windows |
