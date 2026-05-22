@@ -158,3 +158,22 @@ class TestUnmatchedSheet:
 
         # Row 1 is header, Row 2 should be the unmatched ROM
         assert ws.cell(row=2, column=3).value == "Suggested Unknown Game"
+
+    def test_all_matched_shows_placeholder_message(self, sample_df, output_path):
+        all_matched = sample_df[sample_df["matched"]].copy().reset_index(drop=True)
+        export(all_matched)
+        wb = load_workbook(output_path)
+        ws = wb["Unmatched ROMs"]
+        assert ws.cell(row=2, column=1).value == "All ROMs matched perfectly!"
+
+    def test_patch_url_written_as_hyperlink(self, sample_df, output_path):
+        sample_df["suggested_title"] = ["", "", "", "Some Title"]
+        sample_df["suggested_filename"] = ["", "", "", "Some (USA).gba"]
+        sample_df["suggested_md5"] = ["", "", "", "abc123"]
+        sample_df["patch_url"] = ["", "", "", "https://example.com/patch"]
+        export(sample_df)
+        wb = load_workbook(output_path)
+        ws = wb["Unmatched ROMs"]
+        patch_cell = ws.cell(row=2, column=6)
+        assert patch_cell.hyperlink is not None
+        assert "example.com" in patch_cell.hyperlink.target

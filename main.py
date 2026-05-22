@@ -8,6 +8,7 @@ from src.ra_manager.api_client import RAClient, RAClientError
 from src.ra_manager.cache import clear_all
 from src.ra_manager.config import CONSOLES, FOLDER_TO_CONSOLE_ID
 from src.ra_manager.exporter import export
+from src.ra_manager.html_exporter import export_html
 from src.ra_manager.franchise import run_franchise_report
 from src.ra_manager.matcher import HashMatcher
 from src.ra_manager.renamer import rename_roms
@@ -34,6 +35,11 @@ def main():
         "--csv",
         action="store_true",
         help="Output a plain CSV file instead of Excel"
+    )
+    parser.add_argument(
+        "--html",
+        action="store_true",
+        help="Output an HTML report in addition to Excel"
     )
     parser.add_argument(
         "--franchise",
@@ -158,6 +164,12 @@ def main():
         out_path = Path("data") / filename
         export(final_df, user_summary, output_path=out_path)
         print(f"\n💾 Saved Excel workbook to {out_path}")
+
+    if args.html:
+        html_filename = f"ra_collection_{timestamp}.html" if timestamp else "ra_collection.html"
+        html_path = Path("data") / html_filename
+        export_html(final_df, user_summary, output_path=html_path)
+        print(f"🌐 Saved HTML report to {html_path}")
 
     # 7. Auto-Rename (Opt-in only)
     if args.rename or args.dry_run:

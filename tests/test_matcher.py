@@ -133,6 +133,66 @@ class TestMatch:
         assert set(df.columns) == original_cols
 
 
+class TestEnrichWithDumpHints:
+    def _matched_df(self, game_list, matcher) -> pd.DataFrame:
+        hash_map = matcher.build_map(game_list)
+        df = pd.DataFrame(
+            {
+                # Row 0 matched by MD5; Row 1 unmatched but title fuzzy-matches "Metroid Fusion"
+                "filename": ["Rayman_Advance.gba", "Metroid_Fusion_v1.1.gba"],
+                "md5": ["fb20d6009c7400f37581f81ae5b1e917", "000000000000000000000000notareal"],
+                "console": ["gba", "gba"],
+            }
+        )
+        return matcher.match(df, hash_map)
+
+    def _make_client(self, hash_list=None):
+        client = type("Client", (), {})()
+        client.get_game_hashes = lambda game_id, **kw: hash_list or []
+        return client
+
+    def test_returns_df_unchanged_when_all_matched(self, matcher, game_list):
+        hash_map = matcher.build_map(game_list)
+        df = pd.DataFrame(
+            {
+                "filename": ["Rayman_Advance.gba"],
+                "md5": ["fb20d6009c7400f37581f81ae5b1e917"],
+                "console": ["gba"],
+            }
+        )
+        matched = matcher.match(df, hash_map)
+        result = matcher.enrich_with_dump_hints(matched, game_list, self._make_client())
+        assert list(result["filename"]) == list(matched["filename"])
+
+    def test_adds_suggestion_columns_for_unmatched_roms(self, matcher, game_list):
+        client = self._make_client(
+            hash_list=[{"Name": "Metroid Fusion (USA).gba", "MD5": "aabbccdd", "PatchUrl": None}]
+        )
+        matched = self._matched_df(game_list, matcher)
+        result = matcher.enrich_with_dump_hints(matched, game_list, client)
+
+        unmatched_row = result[~result["matched"]].iloc[0]
+        assert unmatched_row["suggested_title"] == "Metroid Fusion"
+        assert unmatched_row["suggested_filename"] == "Metroid Fusion (USA).gba"
+
+    def test_handles_empty_api_hashes_gracefully(self, matcher, game_list):
+        client = self._make_client(hash_list=[])
+        matched = self._matched_df(game_list, matcher)
+        result = matcher.enrich_with_dump_hints(matched, game_list, client)
+
+        unmatched_row = result[~result["matched"]].iloc[0]
+        val = unmatched_row.get("suggested_filename")
+        assert pd.isna(val) or val in (None, "")
+
+    def test_matched_rows_not_affected(self, matcher, game_list):
+        client = self._make_client(hash_list=[])
+        matched = self._matched_df(game_list, matcher)
+        result = matcher.enrich_with_dump_hints(matched, game_list, client)
+
+        matched_row = result[result["matched"]].iloc[0]
+        assert matched_row["ra_title"] == "Rayman Advance"
+
+
 class TestSuggestMatches:
     def test_finds_close_title(self, matcher, game_list):
         # Provide an unmatched dataframe with a slightly misspelled/modified filename
