@@ -2,7 +2,7 @@
 
 > **Author:** lipofefeyt
 > **Last updated:** 2026-05
-> **Status:** Current — reflects M1–M6 implementation
+> **Status:** Current — reflects M1–M7 implementation
 
 ---
 
@@ -26,6 +26,7 @@ The architecture follows a strict layered model: each module has one responsibil
 | `config.py` | Console ID map, folder name map, ROM path resolution from `.env`. | ✅ M1 |
 | `stats.py` | Enriches the DataFrame with completion labels and achievement progress. | ✅ M3 |
 | `exporter.py` | Takes the final DataFrame and writes the Excel workbook. | ✅ M4 / M5 |
+| `html_exporter.py` | Takes the final DataFrame and writes a self-contained HTML report. No extra dependencies — uses stdlib `html` module only. | ✅ M7 |
 | `renamer.py` | Safely renames mathematically matched ROMs to their official titles. Supports `--dry-run` mode to preview changes without touching the filesystem. | ✅ M5.5/M6 |
 
 ---
@@ -55,7 +56,10 @@ flowchart TD
     G -->|user summary| D
     G --> I[ExcelExporter]
     I -->|ra_collection.xlsx| J[(data/)]
-    
+
+    G -->|--html flag| M[HtmlExporter]
+    M -->|ra_collection.html| J
+
     G -->|--rename flag| K[renamer.py]
     K -->|os.rename| L[(Local ROM Folder)]
 ```
@@ -70,7 +74,8 @@ flowchart TD
 4. **Progress Fetch** — For each matched game, `RAClient.get_user_progress()` retrieves achievement counts. `enrich_with_progress()` adds completion data.
 5. **User Summary** — `RAClient.get_user_summary()` fetches overall profile stats for the Summary sheet.
 6. **Export** — `ExcelExporter.export()` writes `data/ra_collection.xlsx` with per-console sheets, Unmatched hints, and a Summary.
-7. **Auto-Rename (Optional)** — If `--rename` is passed, `renamer.rename_roms()` safely updates file names on disk for perfectly matched ROMs.
+7. **HTML Export (Optional)** — If `--html` is passed, `export_html()` writes a self-contained `data/ra_collection.html` with the same sections as the Excel report.
+8. **Auto-Rename (Optional)** — If `--rename` is passed, `renamer.rename_roms()` safely updates file names on disk for perfectly matched ROMs.
 
 ---
 
@@ -125,6 +130,18 @@ Unknown folder names are logged as warnings and skipped — they do not crash th
 | Unmatched ROMs | Unmatched ROMs with suggested correct dump filenames and patch URLs | Second to last |
 | Want to Play | Sourced from `data/want_to_play.csv` | Always last |
 
+## HTML Report Structure
+
+The HTML report (`--html`) mirrors the Excel structure as a single self-contained file with inline CSS. No external dependencies or internet connection required to view it.
+
+| Section | Content |
+|---------|---------|
+| Collection summary cards | Total ROMs, match rate, mastered, in progress, unplayed |
+| RA Profile cards | Points, softcore points, global rank, games played |
+| Per-console tables | One table per console, colour-coded rows matching Excel |
+| Unmatched ROMs | Filename, console, suggested dump, patch URL as clickable link |
+| Want to Play | Sourced from `data/want_to_play.csv` if present |
+
 ---
 
 ## Error Handling
@@ -141,6 +158,14 @@ Unknown folder names are logged as warnings and skipped — they do not crash th
 Tells the user exactly which file to source for each unmatched ROM.
 
 **Matching strategy:** `HashMatcher.normalize()` cleans titles by stripping accents, `~Hack~` tags, and generic words like `Version`. It uses `difflib.get_close_matches` (0.6 cutoff) against the RA game list to identify the intended game. `RAClient.get_game_hashes()` is then called to retrieve the official No-Intro/Redump filenames.
+
+---
+
+## M7 — HTML Report
+
+Adds a `--html` CLI flag that generates `data/ra_collection.html` alongside the Excel workbook. The file is fully self-contained (inline CSS, no external resources) so it can be opened on any machine or shared without a viewer dependency.
+
+**Implementation:** `html_exporter.py` mirrors the structure of `exporter.py`. It uses Python's stdlib `html.escape()` for all user-data rendering to prevent XSS, and shares the same colour semantics as the Excel formatter.
 
 ---
 
