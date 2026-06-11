@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 from src.ra_manager.api_client import RAClient, RAClientError
-from src.ra_manager.cache import clear_all
+from src.ra_manager.cache import clear_all, record_run
 from src.ra_manager.config import CONSOLES, FOLDER_TO_CONSOLE_ID
 from src.ra_manager.delta import compute_delta, load_previous_run, print_delta
 from src.ra_manager.exporter import export
@@ -178,6 +178,9 @@ def main():
     print(f"   Mastered 🏆   : {mastered}")
     print(f"   In Progress   : {in_progress}")
     print(f"   Unplayed      : {unplayed}")
+
+    if not args.hint:
+        record_run(len(final_df), int(final_df["matched"].sum()), int(mastered))
 
     # 6. Export to Excel or CSV
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S") if args.timestamp else ""
