@@ -182,30 +182,67 @@ def _write_summary_sheet(
         write_row(22 + offset, console, count)
 
 
-def _write_want_to_play_sheet(wb: Workbook) -> None:
+def _write_want_to_play_sheet(
+    wb: Workbook,
+    collection_df: pd.DataFrame | None = None,
+    client=None,
+) -> None:
     want_to_play_path = Path("data/want_to_play.csv")
     ws = wb.create_sheet(title="Want to Play")
 
-    headers = ["RA Game ID", "Title", "Console", "Notes", "Added Date", "Owned"]
-    col_widths = [12, 35, 16, 30, 14, 8]
+    headers = [
+        "RA Game ID", "Title", "Console", "Notes", "Added Date",
+        "Owned", "Achievements", "Earned", "Completion %", "Status",
+    ]
+    col_widths = [12, 35, 16, 30, 14, 8, 14, 10, 14, 22]
 
     write_header_row(ws, headers)
     for col_idx, width in enumerate(col_widths, start=1):
         ws.column_dimensions[get_column_letter(col_idx)].width = width
     ws.freeze_panes = "A2"
 
+    owned_ids: set = set()
+    if collection_df is not None and "ra_game_id" in collection_df.columns:
+        owned_ids = set(
+            collection_df.loc[collection_df["matched"], "ra_game_id"].dropna().astype(int)
+        )
+
     if want_to_play_path.exists():
         wtp_df = pd.read_csv(want_to_play_path)
         for row_idx, (_, row) in enumerate(wtp_df.iterrows(), start=2):
-            for col_idx, col in enumerate(
-                ["ra_game_id", "title", "console", "notes", "added_date", "owned"],
-                start=1,
-            ):
-                value = row.get(col, "")
+            game_id_raw = row.get("ra_game_id")
+            game_id = int(game_id_raw) if pd.notna(game_id_raw) else None
+
+            owned = "Yes" if game_id in owned_ids else "No"
+            achievements = earned = completion = status = ""
+
+            if client and game_id:
+                try:
+                    progress = client.get_user_progress(game_id)
+                    achievements = progress.get("total", "")
+                    earned = progress.get("earned", "")
+                    total = progress.get("total", 0)
+                    completion = f"{progress['earned'] / total * 100:.1f}%" if total else "—"
+                    status = (
+                        "Mastered 🏆" if progress.get("is_mastered")
+                        else f"In Progress ({completion})" if earned
+                        else "Unplayed"
+                    )
+                except Exception:
+                    pass
+
+            values = [
+                game_id_raw if pd.notna(game_id_raw) else "",
+                row.get("title", ""), row.get("console", ""),
+                row.get("notes", ""), row.get("added_date", ""),
+                owned, achievements, earned, completion, status,
+            ]
+            for col_idx, value in enumerate(values, start=1):
                 if pd.isna(value):
                     value = ""
                 cell = ws.cell(row=row_idx, column=col_idx, value=value)
                 cell.font = body_font()
+                cell.alignment = Alignment(vertical="center")
     else:
         ws.cell(row=2, column=1, value="No want_to_play.csv found in data/").font = Font(
             name="Arial", italic=True, color="999999"
@@ -253,7 +290,8 @@ def _write_unmatched_sheet(wb: Workbook, df: pd.DataFrame) -> None:
 def export(
     df: pd.DataFrame,
     user_summary: dict | None = None,
-    output_path: Path | str | None = None
+    output_path: Path | str | None = None,
+    client=None,
 ) -> Path:
     """
     Builds and saves the full Excel workbook to data/ra_collection.xlsx.
@@ -286,7 +324,7 @@ def export(
     _write_unmatched_sheet(wb, df)
 
     # Write the want to play sheet
-    _write_want_to_play_sheet(wb)
+    _write_want_to_play_sheet(wb, collection_df=df, client=client)
 
     wb.save(target_path)
     return target_path
