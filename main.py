@@ -12,6 +12,7 @@ from src.ra_manager.exporter import export
 from src.ra_manager.franchise import run_franchise_report
 from src.ra_manager.html_exporter import export_html
 from src.ra_manager.matcher import HashMatcher
+from src.ra_manager.dashboard import serve as serve_dashboard
 from src.ra_manager.patcher import apply_patches
 from src.ra_manager.renamer import rename_roms
 from src.ra_manager.scanner import ROMScanner
@@ -69,9 +70,19 @@ def main():
         action="store_true",
         help="Download and apply xdelta3 patches for unmatched ROMs that have a patch URL"
     )
+    parser.add_argument(
+        "--serve",
+        action="store_true",
+        help="Start local web dashboard on http://127.0.0.1:5000"
+    )
 
     # Parse the arguments
     args = parser.parse_args()
+
+    # Serve mode — no API calls needed
+    if args.serve:
+        serve_dashboard()
+        return
 
     # Get the client
     client = RAClient()
