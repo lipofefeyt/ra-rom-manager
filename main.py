@@ -8,8 +8,8 @@ from src.ra_manager.api_client import RAClient, RAClientError
 from src.ra_manager.cache import clear_all
 from src.ra_manager.config import CONSOLES, FOLDER_TO_CONSOLE_ID
 from src.ra_manager.exporter import export
-from src.ra_manager.html_exporter import export_html
 from src.ra_manager.franchise import run_franchise_report
+from src.ra_manager.html_exporter import export_html
 from src.ra_manager.matcher import HashMatcher
 from src.ra_manager.renamer import rename_roms
 from src.ra_manager.scanner import ROMScanner
@@ -51,6 +51,17 @@ def main():
         action="store_true",
         help="Clear the local cache and fetch fresh data"
     )
+    parser.add_argument(
+        "--console",
+        type=str,
+        metavar="FOLDER",
+        help="Only process one console folder (e.g. gba, snes, psx)"
+    )
+    parser.add_argument(
+        "--hint",
+        action="store_true",
+        help="Sourcing-only run: match ROMs and suggest correct dumps, skip progress fetch"
+    )
 
     # Parse the arguments
     args = parser.parse_args()
@@ -86,6 +97,14 @@ def main():
 
     # 2. For each detected console, fetch the RA hash list and match
     detected_consoles = df["console"].str.lower().unique()
+
+    if args.console:
+        requested = args.console.lower()
+        if requested not in FOLDER_TO_CONSOLE_ID:
+            valid = ", ".join(sorted(FOLDER_TO_CONSOLE_ID.keys()))
+            print(f"❌ Unknown console '{requested}'. Valid options: {valid}")
+            return
+        detected_consoles = [requested]
     all_matched = []
 
     for folder_name in detected_consoles:
@@ -126,17 +145,20 @@ def main():
 
     final_df = pd.concat(all_matched, ignore_index=True)
 
-    # 3. Fetch achievement progress for all matched ROMs
-    matched_count = final_df["matched"].sum()
-    print(f"\n🏆 Fetching achievement progress for {matched_count} matched ROMs...")
-    final_df = enrich_with_progress(final_df, client)
-
-    # 4. Fetch user summary for the Summary sheet
+    # 3. Fetch achievement progress (skipped in --hint mode)
     user_summary = None
-    try:
-        user_summary = client.get_user_summary()
-    except RAClientError as e:
-        print(f"⚠️  Could not fetch user summary: {e}")
+    if args.hint:
+        print("\nℹ️  Hint mode: skipping achievement progress fetch.")
+    else:
+        matched_count = final_df["matched"].sum()
+        print(f"\n🏆 Fetching achievement progress for {matched_count} matched ROMs...")
+        final_df = enrich_with_progress(final_df, client)
+
+        # 4. Fetch user summary for the Summary sheet
+        try:
+            user_summary = client.get_user_summary()
+        except RAClientError as e:
+            print(f"⚠️  Could not fetch user summary: {e}")
 
     # 5. Print summary
     mastered = final_df["is_mastered"].sum()
@@ -162,7 +184,7 @@ def main():
     else:
         filename = f"ra_collection_{timestamp}.xlsx" if timestamp else "ra_collection.xlsx"
         out_path = Path("data") / filename
-        export(final_df, user_summary, output_path=out_path)
+        export(final_df, user_summary, output_path=out_path, client=client)
         print(f"\n💾 Saved Excel workbook to {out_path}")
 
     if args.html:

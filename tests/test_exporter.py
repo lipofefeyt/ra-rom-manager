@@ -177,3 +177,81 @@ class TestUnmatchedSheet:
         patch_cell = ws.cell(row=2, column=6)
         assert patch_cell.hyperlink is not None
         assert "example.com" in patch_cell.hyperlink.target
+
+
+WTP_CSV_RAYMAN = (
+    "ra_game_id,title,console,notes,added_date,owned\n"
+    "1141,Rayman Advance,gba,,2026-01-01,\n"
+)
+WTP_CSV_UNKNOWN = (
+    "ra_game_id,title,console,notes,added_date,owned\n"
+    "9999,Unknown Game,gba,,2026-01-01,\n"
+)
+
+
+class TestWantToPlayEnrichment:
+    def _make_client(self, progress):
+        client = type("Client", (), {})()
+        client.get_user_progress = lambda game_id, **kw: progress
+        return client
+
+    def _setup_wtp_csv(self, tmp_path, content):
+        data_dir = tmp_path / "data"
+        data_dir.mkdir()
+        (data_dir / "want_to_play.csv").write_text(content)
+
+    def test_progress_columns_written_when_client_provided(
+        self, sample_df, output_path, tmp_path, monkeypatch
+    ):
+        import src.ra_manager.exporter as exporter_module
+        self._setup_wtp_csv(tmp_path, WTP_CSV_RAYMAN)
+        monkeypatch.setattr(exporter_module, "OUTPUT_PATH", output_path)
+        monkeypatch.chdir(tmp_path)
+
+        client = self._make_client({"earned": 10, "total": 50, "is_mastered": False})
+        export(sample_df, client=client)
+        wb = load_workbook(output_path)
+        ws = wb["Want to Play"]
+        headers = [ws.cell(row=1, column=c).value for c in range(1, 11)]
+        assert "Achievements" in headers
+        assert "Earned" in headers
+
+    def test_owned_flag_set_for_matched_game(
+        self, sample_df, output_path, tmp_path, monkeypatch
+    ):
+        import src.ra_manager.exporter as exporter_module
+        self._setup_wtp_csv(tmp_path, WTP_CSV_RAYMAN)
+        monkeypatch.setattr(exporter_module, "OUTPUT_PATH", output_path)
+        monkeypatch.chdir(tmp_path)
+
+        client = self._make_client({"earned": 0, "total": 50, "is_mastered": False})
+        export(sample_df, client=client)
+        wb = load_workbook(output_path)
+        ws = wb["Want to Play"]
+        assert ws.cell(row=2, column=6).value == "Yes"
+
+    def test_not_owned_for_unmatched_game(
+        self, sample_df, output_path, tmp_path, monkeypatch
+    ):
+        import src.ra_manager.exporter as exporter_module
+        self._setup_wtp_csv(tmp_path, WTP_CSV_UNKNOWN)
+        monkeypatch.setattr(exporter_module, "OUTPUT_PATH", output_path)
+        monkeypatch.chdir(tmp_path)
+
+        client = self._make_client({"earned": 0, "total": 10, "is_mastered": False})
+        export(sample_df, client=client)
+        wb = load_workbook(output_path)
+        ws = wb["Want to Play"]
+        assert ws.cell(row=2, column=6).value == "No"
+
+    def test_no_client_does_not_crash(
+        self, sample_df, output_path, tmp_path, monkeypatch
+    ):
+        import src.ra_manager.exporter as exporter_module
+        self._setup_wtp_csv(tmp_path, WTP_CSV_RAYMAN)
+        monkeypatch.setattr(exporter_module, "OUTPUT_PATH", output_path)
+        monkeypatch.chdir(tmp_path)
+
+        export(sample_df)  # no client
+        wb = load_workbook(output_path)
+        assert "Want to Play" in wb.sheetnames
