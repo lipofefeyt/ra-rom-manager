@@ -7,10 +7,12 @@ import pandas as pd
 from src.ra_manager.api_client import RAClient, RAClientError
 from src.ra_manager.cache import clear_all
 from src.ra_manager.config import CONSOLES, FOLDER_TO_CONSOLE_ID
+from src.ra_manager.delta import compute_delta, load_previous_run, print_delta
 from src.ra_manager.exporter import export
 from src.ra_manager.franchise import run_franchise_report
 from src.ra_manager.html_exporter import export_html
 from src.ra_manager.matcher import HashMatcher
+from src.ra_manager.patcher import apply_patches
 from src.ra_manager.renamer import rename_roms
 from src.ra_manager.scanner import ROMScanner
 from src.ra_manager.stats import enrich_with_progress
@@ -61,6 +63,11 @@ def main():
         "--hint",
         action="store_true",
         help="Sourcing-only run: match ROMs and suggest correct dumps, skip progress fetch"
+    )
+    parser.add_argument(
+        "--patch",
+        action="store_true",
+        help="Download and apply xdelta3 patches for unmatched ROMs that have a patch URL"
     )
 
     # Parse the arguments
@@ -174,6 +181,7 @@ def main():
 
     # 6. Export to Excel or CSV
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S") if args.timestamp else ""
+    base_xlsx = Path("data") / "ra_collection.xlsx"
 
     if args.csv:
         filename = f"ra_collection_{timestamp}.csv" if timestamp else "ra_collection.csv"
@@ -184,8 +192,13 @@ def main():
     else:
         filename = f"ra_collection_{timestamp}.xlsx" if timestamp else "ra_collection.xlsx"
         out_path = Path("data") / filename
+        prev_run = load_previous_run(base_xlsx) if not args.hint else None
         export(final_df, user_summary, output_path=out_path, client=client)
         print(f"\n💾 Saved Excel workbook to {out_path}")
+
+        if prev_run is not None and not args.hint:
+            print("\n📊 Changes since last run:")
+            print_delta(compute_delta(prev_run, final_df))
 
     if args.html:
         html_filename = f"ra_collection_{timestamp}.html" if timestamp else "ra_collection.html"
@@ -193,7 +206,12 @@ def main():
         export_html(final_df, user_summary, output_path=html_path)
         print(f"🌐 Saved HTML report to {html_path}")
 
-    # 7. Auto-Rename (Opt-in only)
+    # 7. Patch unmatched ROMs (Opt-in only)
+    if args.patch:
+        print("\n🩹 Applying patches for unmatched ROMs...")
+        apply_patches(final_df, dry_run=args.dry_run)
+
+    # 8. Auto-Rename (Opt-in only)
     if args.rename or args.dry_run:
         label = "Previewing rename (dry-run)" if args.dry_run else "Auto-Renaming Matched ROMs"
         print(f"\n🏷️  {label}...")
