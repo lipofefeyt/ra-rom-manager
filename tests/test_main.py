@@ -43,7 +43,7 @@ class TestConsoleFlag:
                 console="doesnotexist", hint=False, refresh=False,
                 franchise=None, rename=False, dry_run=False,
                 exclude=[], timestamp=False, csv=False, html=False,
-                serve=False, patch=False,
+                serve=False, patch=False, user=None,
             )
             MockScanner.return_value.scan.return_value = _make_scan_df()
             main_module.main()
@@ -65,7 +65,7 @@ class TestConsoleFlag:
                 console="gba", hint=False, refresh=False,
                 franchise=None, rename=False, dry_run=False,
                 exclude=[], timestamp=False, csv=False, html=False,
-                serve=False, patch=False,
+                serve=False, patch=False, user=None,
             )
             MockScanner.return_value.scan.return_value = _make_scan_df()
             mock_matcher = MagicMock()
@@ -93,7 +93,7 @@ class TestHintFlag:
                 console=None, hint=True, refresh=False,
                 franchise=None, rename=False, dry_run=False,
                 exclude=[], timestamp=False, csv=False, html=False,
-                serve=False, patch=False,
+                serve=False, patch=False, user=None,
             )
             MockScanner.return_value.scan.return_value = _make_scan_df()
             mock_matcher = MagicMock()
@@ -118,7 +118,7 @@ class TestHintFlag:
                 console=None, hint=True, refresh=False,
                 franchise=None, rename=False, dry_run=False,
                 exclude=[], timestamp=False, csv=False, html=False,
-                serve=False, patch=False,
+                serve=False, patch=False, user=None,
             )
             MockScanner.return_value.scan.return_value = _make_scan_df()
             mock_matcher = MagicMock()
@@ -129,3 +129,84 @@ class TestHintFlag:
             main_module.main()
 
         mock_export.assert_called_once()
+
+
+def _base_mock_args(**overrides):
+    defaults = dict(
+        console=None, hint=False, refresh=False,
+        franchise=None, rename=False, dry_run=False,
+        exclude=[], timestamp=False, csv=False, html=False,
+        serve=False, patch=False, user=None,
+    )
+    defaults.update(overrides)
+    return MagicMock(**defaults)
+
+
+class TestUserFlag:
+    def test_user_flag_passed_to_ra_client(self):
+        enriched = _make_enriched_df()
+
+        with patch("main.RAClient") as MockClient, \
+             patch("main.ROMScanner") as MockScanner, \
+             patch("main.HashMatcher") as MockMatcher, \
+             patch("main.enrich_with_progress", return_value=enriched), \
+             patch("main.export"), \
+             patch("main.argparse.ArgumentParser.parse_args") as mock_args:
+            mock_args.return_value = _base_mock_args(user="alice")
+            MockScanner.return_value.scan.return_value = _make_scan_df()
+            mock_matcher = MagicMock()
+            mock_matcher.match.return_value = enriched
+            mock_matcher.enrich_with_dump_hints.return_value = enriched
+            MockMatcher.return_value = mock_matcher
+
+            main_module.main()
+
+        MockClient.assert_called_once_with(user="alice")
+
+    def test_user_flag_changes_output_stem(self):
+        enriched = _make_enriched_df()
+        captured_paths = []
+
+        def _capture_export(df, summary, output_path, **kw):
+            captured_paths.append(output_path)
+
+        with patch("main.RAClient"), \
+             patch("main.ROMScanner") as MockScanner, \
+             patch("main.HashMatcher") as MockMatcher, \
+             patch("main.enrich_with_progress", return_value=enriched), \
+             patch("main.export", side_effect=_capture_export), \
+             patch("main.argparse.ArgumentParser.parse_args") as mock_args:
+            mock_args.return_value = _base_mock_args(user="alice")
+            MockScanner.return_value.scan.return_value = _make_scan_df()
+            mock_matcher = MagicMock()
+            mock_matcher.match.return_value = enriched
+            mock_matcher.enrich_with_dump_hints.return_value = enriched
+            MockMatcher.return_value = mock_matcher
+
+            main_module.main()
+
+        assert len(captured_paths) == 1
+        assert "alice" in str(captured_paths[0])
+
+    def test_ra_users_env_runs_once_per_user(self, monkeypatch):
+        enriched = _make_enriched_df()
+        monkeypatch.setenv("RA_USERS", "alice,bob")
+
+        with patch("main.RAClient") as MockClient, \
+             patch("main.ROMScanner") as MockScanner, \
+             patch("main.HashMatcher") as MockMatcher, \
+             patch("main.enrich_with_progress", return_value=enriched), \
+             patch("main.export"), \
+             patch("main.argparse.ArgumentParser.parse_args") as mock_args:
+            mock_args.return_value = _base_mock_args()
+            MockScanner.return_value.scan.return_value = _make_scan_df()
+            mock_matcher = MagicMock()
+            mock_matcher.match.return_value = enriched
+            mock_matcher.enrich_with_dump_hints.return_value = enriched
+            MockMatcher.return_value = mock_matcher
+
+            main_module.main()
+
+        assert MockClient.call_count == 2
+        MockClient.assert_any_call(user="alice")
+        MockClient.assert_any_call(user="bob")

@@ -12,9 +12,9 @@ class RAClientError(Exception):
 
 
 class RAClient:
-    def __init__(self):
+    def __init__(self, user: str | None = None):
         load_dotenv()
-        self.user = os.getenv("RA_USERNAME")
+        self.user = user or os.getenv("RA_USERNAME")
         self.api_key = os.getenv("RA_API_KEY")
         self.BASE_URL = "https://retroachievements.org/API"
 
@@ -80,7 +80,7 @@ class RAClient:
         Returns: {earned, total, points_earned, points_total, is_mastered}
         Results are cached for 1 hour.
         """
-        cache_key = f"progress_{game_id}"
+        cache_key = f"progress_{self.user}_{game_id}"
 
         if not force_refresh:
             cached = load_cached(cache_key, TTL_USER_PROGRESS)
