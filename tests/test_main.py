@@ -43,6 +43,7 @@ class TestConsoleFlag:
                 console="doesnotexist", hint=False, refresh=False,
                 franchise=None, rename=False, dry_run=False,
                 exclude=[], timestamp=False, csv=False, html=False,
+                serve=False, patch=False,
             )
             MockScanner.return_value.scan.return_value = _make_scan_df()
             main_module.main()
@@ -64,6 +65,7 @@ class TestConsoleFlag:
                 console="gba", hint=False, refresh=False,
                 franchise=None, rename=False, dry_run=False,
                 exclude=[], timestamp=False, csv=False, html=False,
+                serve=False, patch=False,
             )
             MockScanner.return_value.scan.return_value = _make_scan_df()
             mock_matcher = MagicMock()
@@ -91,6 +93,7 @@ class TestHintFlag:
                 console=None, hint=True, refresh=False,
                 franchise=None, rename=False, dry_run=False,
                 exclude=[], timestamp=False, csv=False, html=False,
+                serve=False, patch=False,
             )
             MockScanner.return_value.scan.return_value = _make_scan_df()
             mock_matcher = MagicMock()
@@ -115,6 +118,7 @@ class TestHintFlag:
                 console=None, hint=True, refresh=False,
                 franchise=None, rename=False, dry_run=False,
                 exclude=[], timestamp=False, csv=False, html=False,
+                serve=False, patch=False,
             )
             MockScanner.return_value.scan.return_value = _make_scan_df()
             mock_matcher = MagicMock()
