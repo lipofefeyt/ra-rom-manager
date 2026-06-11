@@ -22,7 +22,8 @@ def client(monkeypatch, tmp_path):
     monkeypatch.setenv("RA_API_KEY", "testapikey")
     import src.ra_manager.cache as cache_module
 
-    monkeypatch.setattr(cache_module, "CACHE_FILE", tmp_path / "cache.json")
+    monkeypatch.setattr(cache_module, "DB_FILE", tmp_path / "test_cache.db")
+    monkeypatch.setattr(cache_module, "_LEGACY_JSON", tmp_path / "cache.json")
     return RAClient()
 
 
