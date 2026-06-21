@@ -1,6 +1,6 @@
-# RA ROM Manager — Development Requirements
+# RA ROM Manager - Development Requirements
 
-> **Status:** Active — v1.1
+> **Status:** Active - v1.1
 > **Last updated:** 2026-03
 > **Author:** lipofefeyt
 
@@ -70,7 +70,7 @@ The matcher shall build a flat `{md5: (title, game_id)}` lookup map from the RA 
 The matcher shall add `ra_title`, `ra_game_id`, and `matched` columns to the scanned ROM DataFrame.
 
 **RA-DEV-012** `[MATCH]` `IMPLEMENTED`
-The matcher shall not mutate the input DataFrame — it shall always operate on a copy.
+The matcher shall not mutate the input DataFrame - it shall always operate on a copy.
 
 **RA-DEV-013** `[MATCH]` `IMPLEMENTED`
 For unmatched ROMs, the matcher shall suggest the closest RA-accepted dump by fuzzy title match, adding `suggested_title`, `suggested_md5`, `suggested_filename`, and `patch_url` columns. Assigned to M5.
@@ -117,7 +117,7 @@ Hash list responses shall be cached with a 24-hour TTL. Progress and summary res
 All `RAClient` methods shall accept a `force_refresh=True` parameter to bypass the cache and update it with fresh data.
 
 **RA-DEV-033** `[CACHE]` `IMPLEMENTED`
-The cache shall be resilient to corruption — a malformed `cache.json` shall return `None` for all keys without raising an exception.
+The cache shall be resilient to corruption - a malformed `cache.json` shall return `None` for all keys without raising an exception.
 
 **RA-DEV-034** `[CACHE]` `IMPLEMENTED`
 `cache.clear_all()` shall wipe the entire cache file.

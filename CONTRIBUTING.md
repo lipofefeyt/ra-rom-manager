@@ -34,7 +34,7 @@ If you want to add a new issue, add it to `issues.json` first following the exis
 
 ## Code Style
 
-This project uses [Ruff](https://docs.astral.sh/ruff/) for linting and formatting. Configuration is in `pyproject.toml`. There are no manual formatting rules to remember — just run `ruff check . --fix` and `ruff format .` before committing.
+This project uses [Ruff](https://docs.astral.sh/ruff/) for linting and formatting. Configuration is in `pyproject.toml`. There are no manual formatting rules to remember - just run `ruff check . --fix` and `ruff format .` before committing.
 
 ## Environment Setup
 
@@ -44,7 +44,7 @@ cp .env.example .env
 # Fill in RA_USERNAME, RA_API_KEY, ROM_PATH
 ```
 
-Or open the repo in GitHub Codespaces — the dev container handles everything automatically.
+Or open the repo in GitHub Codespaces - the dev container handles everything automatically.
 
 ## Running Tests
 
@@ -61,4 +61,4 @@ To run a single file directly, use the venv's pytest:
 .venv/bin/pytest tests/test_html_exporter.py -v
 ```
 
-Always run via `pytest`, not `python3 tests/...` — the latter won't resolve the `src.ra_manager` package path.
+Always run via `pytest`, not `python3 tests/...` - the latter won't resolve the `src.ra_manager` package path.

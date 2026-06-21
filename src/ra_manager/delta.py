@@ -34,9 +34,9 @@ def compute_delta(
 ) -> dict:
     """
     Compares two enriched DataFrames (prev / curr) and returns a dict:
-      newly_mastered  — list of ra_title newly mastered this run
-      progress_gains  — list of (ra_title, old_pct, new_pct) for games that improved
-      newly_matched   — list of ra_title that were unmatched before but matched now
+      newly_mastered  - list of ra_title newly mastered this run
+      progress_gains  - list of (ra_title, old_pct, new_pct) for games that improved
+      newly_matched   - list of ra_title that were unmatched before but matched now
     """
     _empty = pd.DataFrame(columns=["ra_game_id", "ra_title", "is_mastered", "completion_pct"])
     _empty_idx = _empty.set_index("ra_game_id")

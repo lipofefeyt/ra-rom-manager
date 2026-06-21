@@ -90,7 +90,7 @@ class ROMScanner:
                 suffix = file_path.suffix.lower()
                 console = file_path.parent.name
 
-                # Skip .cue descriptors — hash their paired .bin instead
+                # Skip .cue descriptors - hash their paired .bin instead
                 if suffix in SKIP_EXTENSIONS:
                     rom_data.append(
                         _skipped_row(
@@ -98,7 +98,7 @@ class ROMScanner:
                             suffix,
                             file_path,
                             console,
-                            ".cue descriptor — paired .bin will be hashed",
+                            ".cue descriptor - paired .bin will be hashed",
                         )
                     )
                     continue

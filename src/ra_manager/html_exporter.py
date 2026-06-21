@@ -65,7 +65,7 @@ def _summary_section(df: pd.DataFrame, user_summary: dict | None) -> str:
         int(df["status"].str.startswith("In Progress").sum()) if "status" in df.columns else 0
     )
     unplayed = int((df["status"] == "Unplayed").sum()) if "status" in df.columns else 0
-    match_rate = f"{matched / total * 100:.1f}%" if total else "—"
+    match_rate = f"{matched / total * 100:.1f}%" if total else "-"
 
     parts = ['<h2>Collection</h2><div class="summary-grid">']
     parts.append(_card("Total ROMs", total))
@@ -78,10 +78,10 @@ def _summary_section(df: pd.DataFrame, user_summary: dict | None) -> str:
 
     if user_summary:
         parts.append('<h2>RA Profile</h2><div class="summary-grid">')
-        parts.append(_card("Points", user_summary.get("points", "—")))
-        parts.append(_card("Softcore Points", user_summary.get("softcore_points", "—")))
-        parts.append(_card("Global Rank", user_summary.get("rank", "—")))
-        parts.append(_card("Games Played", user_summary.get("games_played", "—")))
+        parts.append(_card("Points", user_summary.get("points", "-")))
+        parts.append(_card("Softcore Points", user_summary.get("softcore_points", "-")))
+        parts.append(_card("Global Rank", user_summary.get("rank", "-")))
+        parts.append(_card("Games Played", user_summary.get("games_played", "-")))
         parts.append("</div>")
 
     return "\n".join(parts)
@@ -203,12 +203,12 @@ def export_html(
         "<head>\n"
         '<meta charset="UTF-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
-        "<title>RA ROM Manager — Collection Report</title>\n"
+        "<title>RA ROM Manager - Collection Report</title>\n"
         f"<style>{_CSS}</style>\n"
         "</head>\n"
         "<body>\n"
         '<div class="page">\n'
-        "<h1>RA ROM Manager — Collection Report</h1>\n"
+        "<h1>RA ROM Manager - Collection Report</h1>\n"
         f"{body}\n"
         "</div>\n"
         "</body>\n"

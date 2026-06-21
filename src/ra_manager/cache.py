@@ -7,8 +7,8 @@ DB_FILE = Path("data/ra_cache.db")
 _LEGACY_JSON = Path("data/cache.json")
 
 # TTL values in seconds
-TTL_HASH_LIST = 24 * 3600  # 24 hours — hash lists rarely change
-TTL_USER_PROGRESS = 1 * 3600  # 1 hour — progress changes as you play
+TTL_HASH_LIST = 24 * 3600  # 24 hours - hash lists rarely change
+TTL_USER_PROGRESS = 1 * 3600  # 1 hour - progress changes as you play
 
 
 def _connect() -> sqlite3.Connection:

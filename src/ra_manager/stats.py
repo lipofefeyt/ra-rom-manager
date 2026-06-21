@@ -16,11 +16,11 @@ def get_completion_label(earned: int, total: int) -> str:
 def enrich_with_progress(df: pd.DataFrame, client) -> pd.DataFrame:
     """
     Fetches achievement progress for every matched ROM and adds columns:
-        earned          — achievements earned by the user
-        total           — total achievements available
-        completion_pct  — percentage complete (0.0 to 100.0)
-        is_mastered     — True if all achievements earned
-        status          — human-readable label
+        earned          - achievements earned by the user
+        total           - total achievements available
+        completion_pct  - percentage complete (0.0 to 100.0)
+        is_mastered     - True if all achievements earned
+        status          - human-readable label
     """
     df = df.copy()
 

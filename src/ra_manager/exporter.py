@@ -137,21 +137,21 @@ def _write_summary_sheet(
         vc = ws.cell(row=row, column=2, value=value)
         vc.font = value_font
 
-    ws.cell(row=1, column=1, value="RA ROM Manager — Collection Summary").font = title_font
+    ws.cell(row=1, column=1, value="RA ROM Manager - Collection Summary").font = title_font
     ws.merge_cells("A1:B1")
     ws.row_dimensions[1].height = 28
 
     # User profile section
     write_section_header(3, "👤 RA Profile")
     if user_summary:
-        write_row(4, "Points", user_summary.get("points", "—"))
-        write_row(5, "Softcore Points", user_summary.get("softcore_points", "—"))
-        write_row(6, "Global Rank", user_summary.get("rank", "—"))
-        write_row(7, "Games Played", user_summary.get("games_played", "—"))
+        write_row(4, "Points", user_summary.get("points", "-"))
+        write_row(5, "Softcore Points", user_summary.get("softcore_points", "-"))
+        write_row(6, "Global Rank", user_summary.get("rank", "-"))
+        write_row(7, "Games Played", user_summary.get("games_played", "-"))
     else:
         write_row(4, "Profile data", "unavailable")
 
-    # Collection stats section — use Excel formulas referencing console sheets
+    # Collection stats section - use Excel formulas referencing console sheets
     total_roms = len(df)
     matched = int(df["matched"].sum()) if "matched" in df.columns else 0
     mastered = int(df["is_mastered"].sum()) if "is_mastered" in df.columns else 0
@@ -165,7 +165,7 @@ def _write_summary_sheet(
     write_row(10, "Total ROMs", total_roms)
     write_row(11, "Matched to RA", matched)
     write_row(12, "Unmatched", unmatched)
-    write_row(13, "Match Rate", f"{(matched / total_roms * 100):.1f}%" if total_roms else "—")
+    write_row(13, "Match Rate", f"{(matched / total_roms * 100):.1f}%" if total_roms else "-")
 
     write_section_header(15, "🏆 Progress")
     write_row(16, "Mastered", mastered)
@@ -222,7 +222,7 @@ def _write_want_to_play_sheet(
                     achievements = progress.get("total", "")
                     earned = progress.get("earned", "")
                     total = progress.get("total", 0)
-                    completion = f"{progress['earned'] / total * 100:.1f}%" if total else "—"
+                    completion = f"{progress['earned'] / total * 100:.1f}%" if total else "-"
                     status = (
                         "Mastered 🏆" if progress.get("is_mastered")
                         else f"In Progress ({completion})" if earned
@@ -297,9 +297,9 @@ def export(
     Builds and saves the full Excel workbook to data/ra_collection.xlsx.
 
     Sheets:
-        Summary      — user stats + collection overview (always first)
-        <Console>    — one sheet per console, with conditional formatting
-        Want to Play — sourced from data/want_to_play.csv if present
+        Summary      - user stats + collection overview (always first)
+        <Console>    - one sheet per console, with conditional formatting
+        Want to Play - sourced from data/want_to_play.csv if present
 
     Returns the path to the saved file.
     """

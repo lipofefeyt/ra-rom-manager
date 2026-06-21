@@ -2,7 +2,7 @@
 
 > **Author:** lipofefeyt
 > **Last updated:** 2026-05
-> **Status:** Current — reflects M1–M7 implementation
+> **Status:** Current - reflects M1–M7 implementation
 
 ---
 
@@ -26,7 +26,7 @@ The architecture follows a strict layered model: each module has one responsibil
 | `config.py` | Console ID map, folder name map, ROM path resolution from `.env`. | ✅ M1 |
 | `stats.py` | Enriches the DataFrame with completion labels and achievement progress. | ✅ M3 |
 | `exporter.py` | Takes the final DataFrame and writes the Excel workbook. | ✅ M4 / M5 |
-| `html_exporter.py` | Takes the final DataFrame and writes a self-contained HTML report. No extra dependencies — uses stdlib `html` module only. | ✅ M7 |
+| `html_exporter.py` | Takes the final DataFrame and writes a self-contained HTML report. No extra dependencies - uses stdlib `html` module only. | ✅ M7 |
 | `renamer.py` | Safely renames mathematically matched ROMs to their official titles. Supports `--dry-run` mode to preview changes without touching the filesystem. | ✅ M5.5/M6 |
 
 ---
@@ -68,14 +68,14 @@ flowchart TD
 
 ## Pipeline Execution Order
 
-1. **Scan** — `ROMScanner.scan()` walks `ROM_PATH`, hashes every supported file, returns a DataFrame with `filename`, `md5`, `extension`, `path`, `console`, `skipped`, `skip_reason`.
-2. **Fetch & Match** — For each detected console folder, `RAClient.get_console_game_hashes()` returns the RA hash list. `HashMatcher.match()` adds `ra_title`, `ra_game_id`, and `matched` columns.
-3. **ROM Sourcing Hints** — For each unmatched ROM, `HashMatcher.suggest_matches()` normalizes the string to guess the game, calls `RAClient.get_game_hashes()`, and retrieves the accepted dump filenames.
-4. **Progress Fetch** — For each matched game, `RAClient.get_user_progress()` retrieves achievement counts. `enrich_with_progress()` adds completion data.
-5. **User Summary** — `RAClient.get_user_summary()` fetches overall profile stats for the Summary sheet.
-6. **Export** — `ExcelExporter.export()` writes `data/ra_collection.xlsx` with per-console sheets, Unmatched hints, and a Summary.
-7. **HTML Export (Optional)** — If `--html` is passed, `export_html()` writes a self-contained `data/ra_collection.html` with the same sections as the Excel report.
-8. **Auto-Rename (Optional)** — If `--rename` is passed, `renamer.rename_roms()` safely updates file names on disk for perfectly matched ROMs.
+1. **Scan** - `ROMScanner.scan()` walks `ROM_PATH`, hashes every supported file, returns a DataFrame with `filename`, `md5`, `extension`, `path`, `console`, `skipped`, `skip_reason`.
+2. **Fetch & Match** - For each detected console folder, `RAClient.get_console_game_hashes()` returns the RA hash list. `HashMatcher.match()` adds `ra_title`, `ra_game_id`, and `matched` columns.
+3. **ROM Sourcing Hints** - For each unmatched ROM, `HashMatcher.suggest_matches()` normalizes the string to guess the game, calls `RAClient.get_game_hashes()`, and retrieves the accepted dump filenames.
+4. **Progress Fetch** - For each matched game, `RAClient.get_user_progress()` retrieves achievement counts. `enrich_with_progress()` adds completion data.
+5. **User Summary** - `RAClient.get_user_summary()` fetches overall profile stats for the Summary sheet.
+6. **Export** - `ExcelExporter.export()` writes `data/ra_collection.xlsx` with per-console sheets, Unmatched hints, and a Summary.
+7. **HTML Export (Optional)** - If `--html` is passed, `export_html()` writes a self-contained `data/ra_collection.html` with the same sections as the Excel report.
+8. **Auto-Rename (Optional)** - If `--rename` is passed, `renamer.rename_roms()` safely updates file names on disk for perfectly matched ROMs.
 
 ---
 
@@ -117,7 +117,7 @@ ROM_PATH/
 └── neogeo/      →  Console ID 56  (NeoGeo)
 ```
 
-Unknown folder names are logged as warnings and skipped — they do not crash the run.
+Unknown folder names are logged as warnings and skipped - they do not crash the run.
 
 ---
 
@@ -148,12 +148,12 @@ The HTML report (`--html`) mirrors the Excel structure as a single self-containe
 
 - `RAClientError` is raised for all network-level failures. Callers in `main.py` catch this and skip the affected console.
 - `OSError` is raised by `get_rom_path()` if `ROM_PATH` is missing or does not exist.
-- Scanner errors on individual files are caught per-file and logged — one bad file does not abort the scan.
+- Scanner errors on individual files are caught per-file and logged - one bad file does not abort the scan.
 - Dictionary vs. List variations in the RA API are safely parsed using `isinstance()`.
 
 ---
 
-## M5 — ROM Sourcing Hints
+## M5 - ROM Sourcing Hints
 
 Tells the user exactly which file to source for each unmatched ROM.
 
@@ -161,7 +161,7 @@ Tells the user exactly which file to source for each unmatched ROM.
 
 ---
 
-## M7 — HTML Report
+## M7 - HTML Report
 
 Adds a `--html` CLI flag that generates `data/ra_collection.html` alongside the Excel workbook. The file is fully self-contained (inline CSS, no external resources) so it can be opened on any machine or shared without a viewer dependency.
 
@@ -169,7 +169,7 @@ Adds a `--html` CLI flag that generates `data/ra_collection.html` alongside the 
 
 ---
 
-## M5.5 — File Management (Auto-Renamer)
+## M5.5 - File Management (Auto-Renamer)
 
 Re-organizes the user's hard drive automatically with 3 layers of mathematical safety:
 1. **Mathematical Certainty:** Only renames a file if `matched == True` (its MD5 hash cryptographically matches RA's expected hash).

@@ -1,5 +1,5 @@
 """
-Local web dashboard — serves collection data from the SQLite cache.
+Local web dashboard - serves collection data from the SQLite cache.
 Launch with: python main.py --serve
 """
 import json
@@ -59,7 +59,7 @@ _TEMPLATE = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RA ROM Manager — {title}</title>
+<title>RA ROM Manager - {title}</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <style>
   body{{font-family:Arial,sans-serif;margin:0;background:#f4f4f4;color:#222}}
@@ -128,7 +128,7 @@ function pollRescan(){{
     }}else{{
       btn.disabled=false;
       if(d.last_result==='ok'){{
-        msg.textContent='✅ Done — reload to see updates';
+        msg.textContent='✅ Done - reload to see updates';
       }}else if(d.last_result==='error'){{
         msg.textContent='❌ '+d.message;
       }}else{{
@@ -351,7 +351,7 @@ def create_app() -> Flask:
         consoles = _consoles_from(_load_xlsx())
 
         if df is None or df.empty:
-            body = '<p class="empty">No unmatched ROMs — or run main.py first.</p>'
+            body = '<p class="empty">No unmatched ROMs - or run main.py first.</p>'
             return _TEMPLATE.format(
                 title="Unmatched ROMs", console_links=_nav_links(consoles), body=body
             )

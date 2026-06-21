@@ -46,7 +46,7 @@ def _run_for_user(args, client: RAClient, out_stem: str) -> None:
     for folder_name in detected_consoles:
         console_id = FOLDER_TO_CONSOLE_ID.get(folder_name)
         if console_id is None:
-            print(f"⚠️  Unknown console folder '{folder_name}' — skipping.")
+            print(f"⚠️  Unknown console folder '{folder_name}' - skipping.")
             continue
 
         console_name = CONSOLES[console_id]
@@ -55,11 +55,11 @@ def _run_for_user(args, client: RAClient, out_stem: str) -> None:
         try:
             ra_game_list = client.get_console_game_hashes(console_id)
         except RAClientError as e:
-            print(f"❌ {console_name}: {e} — skipping.")
+            print(f"❌ {console_name}: {e} - skipping.")
             continue
 
         if not ra_game_list:
-            print(f"❌ No data returned for {console_name} — skipping.")
+            print(f"❌ No data returned for {console_name} - skipping.")
             continue
 
         hash_map = matcher.build_map(ra_game_list)

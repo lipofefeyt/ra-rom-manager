@@ -75,7 +75,7 @@ class TestConsoleFlag:
 
             main_module.main()
 
-        # Only the gba console should have been processed — matcher called once
+        # Only the gba console should have been processed - matcher called once
         assert mock_matcher.match.call_count == 1
 
 

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ra-rom-manager"
 version = "1.12.0"
-description = "Personal RetroAchievements ROM manager — hash verification, achievement tracking, and Excel reporting"
+description = "Personal RetroAchievements ROM manager - hash verification, achievement tracking, and Excel reporting"
 requires-python = ">=3.12"
 dependencies = [
     "requests>=2.31",
@@ -42,7 +42,7 @@ select = [
 ]
 ignore = [
     "B008",   # do not perform function calls in default arguments
-    "BLE001", # blind exception catch — intentional in _do_scan
+    "BLE001", # blind exception catch - intentional in _do_scan
 ]
 
 [tool.mypy]

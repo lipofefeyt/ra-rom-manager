@@ -4,7 +4,7 @@
 
 > **Author:** lipofefeyt
 > **Version:** 1.7.0
-> **Status:** Active — M1–M7 complete
+> **Status:** Active - M1–M7 complete
 
 A personal ROM library manager built around [RetroAchievements](https://retroachievements.org). Scans your local ROM collection, verifies files against RA-accepted hashes, tracks achievement progress per game, exports everything to a structured Excel workbook, and safely auto-renames your valid files.
 
@@ -15,7 +15,7 @@ A personal ROM library manager built around [RetroAchievements](https://retroach
 - Scans a local ROM library and computes MD5 hashes
 - Matches ROMs against the official RetroAchievements hash database
 - Supports multiple consoles in a single run (GBA, GB, GBC, SNES, NES, PS1, PS2, PSP, GameCube, N64, NDS, Saturn, NeoGeo, Mega Drive, and more)
-- TTL-based local cache — fast after first run, no redundant API calls
+- TTL-based local cache - fast after first run, no redundant API calls
 - Handles `.zip` archives (extracts and hashes in memory) and `.cue`/`.bin` pairs correctly
 - Fetches achievement progress per matched game (earned, total, completion %, mastered)
 - Exports to `data/ra_collection.xlsx` with per-console sheets, a Summary sheet, and a Want to Play sheet
@@ -129,7 +129,7 @@ Unknown folder names are logged as warnings and skipped.
 ra-rom-manager/
 ├── .devcontainer/
 ├── .github/
-├── data/                        # gitignored — runtime outputs
+├── data/                        # gitignored - runtime outputs
 │   ├── cache.json
 │   ├── ra_collection.xlsx
 │   ├── ra_collection.html
@@ -163,14 +163,14 @@ ra-rom-manager/
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
-| M1 — Clean Foundation | ✅ Complete | Devcontainer, CI, pyproject.toml, core refactor |
-| M2 — Multi-Console & Caching | ✅ Complete | Cache layer, scanner fixes, multi-console |
-| M3 — Achievement Tracking | ✅ Complete | Progress fetching, stats enrichment |
-| M4 — Excel Output & Stats | ✅ Complete | Full Excel export with formatting |
-| M5 — ROM Sourcing Hints | ✅ Complete | Suggest correct dump for unmatched ROMs |
-| M5.5 — File Management | ✅ Complete | Safe, strict hash-based auto-renaming tool |
-| M6 — Code Quality & Safety | ✅ Complete | `--dry-run` flag, refactored main.py, 108 tests |
-| M7 — HTML Report | ✅ Complete | Self-contained HTML report via `--html`, 126 tests |
+| M1 - Clean Foundation | ✅ Complete | Devcontainer, CI, pyproject.toml, core refactor |
+| M2 - Multi-Console & Caching | ✅ Complete | Cache layer, scanner fixes, multi-console |
+| M3 - Achievement Tracking | ✅ Complete | Progress fetching, stats enrichment |
+| M4 - Excel Output & Stats | ✅ Complete | Full Excel export with formatting |
+| M5 - ROM Sourcing Hints | ✅ Complete | Suggest correct dump for unmatched ROMs |
+| M5.5 - File Management | ✅ Complete | Safe, strict hash-based auto-renaming tool |
+| M6 - Code Quality & Safety | ✅ Complete | `--dry-run` flag, refactored main.py, 108 tests |
+| M7 - HTML Report | ✅ Complete | Self-contained HTML report via `--html`, 126 tests |
 
 ---
 
@@ -188,4 +188,4 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## License
 
-[MIT](LICENSE) — lipofefeyt
+[MIT](LICENSE) - lipofefeyt

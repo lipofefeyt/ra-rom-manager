@@ -23,7 +23,7 @@ def rename_roms(df: pd.DataFrame, dry_run: bool = False) -> None:
     Pass dry_run=True to preview changes without touching the filesystem.
     """
     if dry_run:
-        print("   🔍 Dry-run mode — no files will be changed.")
+        print("   🔍 Dry-run mode - no files will be changed.")
 
     # LAYER 1 SAFETY: Only process perfectly matched ROMs
     matched_df = df[df["matched"]]

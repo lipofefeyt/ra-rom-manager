@@ -6,7 +6,7 @@ from src.ra_manager.dashboard import create_app
 
 
 class _FakeThread:
-    """Replaces threading.Thread in tests — runs nothing, avoids subprocess."""
+    """Replaces threading.Thread in tests - runs nothing, avoids subprocess."""
     def __init__(self, *args, **kwargs):
         pass
 
