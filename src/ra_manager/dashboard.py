@@ -4,12 +4,55 @@ Launch with: python main.py --serve
 """
 import json
 import sqlite3
+import subprocess
+import sys
+import threading
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
-from flask import Flask
+from flask import Flask, jsonify
 
 from .cache import DB_FILE
+
+_scan_state: dict = {
+    "running": False,
+    "last_ran": None,
+    "last_result": None,
+    "message": "",
+}
+_scan_lock = threading.Lock()
+
+
+def _do_scan(cwd: Path | None = None) -> None:
+    try:
+        result = subprocess.run(
+            [sys.executable, "main.py"],
+            capture_output=True,
+            text=True,
+            timeout=300,
+            cwd=cwd,
+        )
+        with _scan_lock:
+            _scan_state["running"] = False
+            _scan_state["last_ran"] = datetime.now().isoformat(timespec="seconds")
+            if result.returncode == 0:
+                _scan_state["last_result"] = "ok"
+                _scan_state["message"] = "Scan completed successfully."
+            else:
+                tail = (result.stderr.strip() or result.stdout.strip())[-200:]
+                _scan_state["last_result"] = "error"
+                _scan_state["message"] = tail or "Unknown error."
+    except subprocess.TimeoutExpired:
+        with _scan_lock:
+            _scan_state["running"] = False
+            _scan_state["last_result"] = "error"
+            _scan_state["message"] = "Scan timed out after 5 minutes."
+    except Exception as e:  # noqa: BLE001
+        with _scan_lock:
+            _scan_state["running"] = False
+            _scan_state["last_result"] = "error"
+            _scan_state["message"] = str(e)
 
 _TEMPLATE = """<!doctype html>
 <html lang="en">
@@ -50,6 +93,10 @@ _TEMPLATE = """<!doctype html>
   .badge.u{{background:#FFC7CE;color:#9c1a1a}}
   a.patch{{color:#1F4E79;font-size:12px}}
   .empty{{padding:24px;color:#888;font-style:italic}}
+  .rescan-btn{{background:#fff;color:#1F4E79;border:none;border-radius:4px;
+               padding:6px 14px;font-weight:bold;font-size:13px;cursor:pointer}}
+  .rescan-btn:disabled{{opacity:0.5;cursor:not-allowed}}
+  .rescan-msg{{color:#fff;font-size:12px;margin-left:8px}}
 </style>
 </head>
 <body>
@@ -59,8 +106,38 @@ _TEMPLATE = """<!doctype html>
   {console_links}
   <a href="/unmatched">Unmatched</a>
   <a href="/wanttoplay">Want to Play</a>
+  <button class="rescan-btn" id="rescan-btn" onclick="startRescan()">Rescan</button>
+  <span class="rescan-msg" id="rescan-msg"></span>
 </nav>
 {body}
+<script>
+function startRescan(){{
+  var btn=document.getElementById('rescan-btn');
+  var msg=document.getElementById('rescan-msg');
+  btn.disabled=true;
+  msg.textContent='Starting…';
+  fetch('/rescan',{{method:'POST'}}).then(function(){{pollRescan();}});
+}}
+function pollRescan(){{
+  var btn=document.getElementById('rescan-btn');
+  var msg=document.getElementById('rescan-msg');
+  fetch('/rescan/status').then(function(r){{return r.json();}}).then(function(d){{
+    if(d.running){{
+      msg.textContent='⏳ Scanning…';
+      setTimeout(pollRescan,2000);
+    }}else{{
+      btn.disabled=false;
+      if(d.last_result==='ok'){{
+        msg.textContent='✅ Done — reload to see updates';
+      }}else if(d.last_result==='error'){{
+        msg.textContent='❌ '+d.message;
+      }}else{{
+        msg.textContent='';
+      }}
+    }}
+  }});
+}}
+</script>
 </body></html>"""
 
 
@@ -339,6 +416,23 @@ def create_app() -> Flask:
         return _TEMPLATE.format(
             title="Want to Play", console_links=_nav_links(consoles), body=body
         )
+
+    @app.route("/rescan", methods=["POST"])
+    def rescan():
+        with _scan_lock:
+            if _scan_state["running"]:
+                return jsonify({"status": "already_running"}), 409
+            _scan_state["running"] = True
+            _scan_state["message"] = "Scanning…"
+        cwd = Path(__file__).parent.parent.parent
+        t = threading.Thread(target=_do_scan, args=(cwd,), daemon=True)
+        t.start()
+        return jsonify({"status": "started"}), 202
+
+    @app.route("/rescan/status")
+    def rescan_status():
+        with _scan_lock:
+            return jsonify(dict(_scan_state))
 
     return app
 

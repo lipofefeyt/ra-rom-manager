@@ -41,7 +41,8 @@ select = [
     "UP",  # pyupgrade
 ]
 ignore = [
-    "B008",  # do not perform function calls in default arguments
+    "B008",   # do not perform function calls in default arguments
+    "BLE001", # blind exception catch — intentional in _do_scan
 ]
 
 [tool.mypy]
