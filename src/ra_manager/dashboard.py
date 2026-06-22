@@ -175,8 +175,8 @@ def _load_xlsx() -> pd.DataFrame | None:
                 continue
             df = df.rename(columns=_XLSX_COL_RENAMES)
             for col in _BOOL_COLS:
-                if col in df.columns and df[col].dtype == object:
-                    df[col] = df[col].map({"Yes": True, "No": False}).fillna(False)
+                if col in df.columns:
+                    df[col] = df[col].isin(["Yes", True, 1])
             frames.append(df)
         return pd.concat(frames, ignore_index=True) if frames else None
     except Exception:
