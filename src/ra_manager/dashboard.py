@@ -147,6 +147,21 @@ def _nav_links(consoles: list[str]) -> str:
     )
 
 
+_XLSX_COL_RENAMES = {
+    "Filename": "filename",
+    "RA Title": "ra_title",
+    "RA Game ID": "ra_game_id",
+    "Matched": "matched",
+    "Earned": "earned",
+    "Total": "total",
+    "Completion %": "completion_pct",
+    "Mastered": "is_mastered",
+    "Status": "status",
+    "Console": "console",
+}
+_BOOL_COLS = {"matched", "is_mastered"}
+
+
 def _load_xlsx() -> pd.DataFrame | None:
     xlsx = Path("data/ra_collection.xlsx")
     if not xlsx.exists():
@@ -154,7 +169,15 @@ def _load_xlsx() -> pd.DataFrame | None:
     skip = {"Summary", "Unmatched ROMs", "Want to Play"}
     try:
         sheets = pd.read_excel(xlsx, sheet_name=None, engine="openpyxl")
-        frames = [df for name, df in sheets.items() if name not in skip and not df.empty]
+        frames = []
+        for name, df in sheets.items():
+            if name in skip or df.empty:
+                continue
+            df = df.rename(columns=_XLSX_COL_RENAMES)
+            for col in _BOOL_COLS:
+                if col in df.columns and df[col].dtype == object:
+                    df[col] = df[col].map({"Yes": True, "No": False}).fillna(False)
+            frames.append(df)
         return pd.concat(frames, ignore_index=True) if frames else None
     except Exception:
         return None

@@ -90,9 +90,15 @@ def _run_for_user(args, client: RAClient, out_stem: str) -> None:
         except RAClientError as e:
             print(f"⚠️  Could not fetch user summary: {e}")
 
-    mastered = final_df["is_mastered"].sum()
-    in_progress = final_df["status"].str.startswith("In Progress").sum()
-    unplayed = (final_df["status"] == "Unplayed").sum()
+    mastered = int(final_df["is_mastered"].sum()) if "is_mastered" in final_df.columns else 0
+    in_progress = (
+        int(final_df["status"].str.startswith("In Progress").sum())
+        if "status" in final_df.columns else 0
+    )
+    unplayed = (
+        int((final_df["status"] == "Unplayed").sum())
+        if "status" in final_df.columns else 0
+    )
 
     print("\n📊 Summary:")
     print(f"   Total ROMs    : {len(final_df)}")
