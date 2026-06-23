@@ -233,7 +233,7 @@ def create_app() -> Flask:
         matched = int(df["matched"].sum()) if "matched" in df.columns else 0
         mastered = int(df["is_mastered"].sum()) if "is_mastered" in df.columns else 0
         in_progress = (
-            int(df["status"].str.startswith("In Progress").sum())
+            int(df["status"].fillna("").str.startswith("In Progress").sum())
             if "status" in df.columns
             else 0
         )
